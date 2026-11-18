@@ -90,7 +90,7 @@
       <div class="wrap">
         <p class="kicker reveal">粉丝页</p>
         <h1 class="reveal">在这里找到我</h1>
-        <p class="lead reveal">频道入口、作品和交流群可以访问。留言墙精选自抖音评论区，统一署名「抖音网友」，不展示粉丝昵称或头像。周边入口目前还是占位，请不要把示例当成真实福利。</p>
+        <p class="lead reveal">频道入口、作品和交流群可以访问。留言墙精选自抖音评论区，粉丝昵称做了打码，不展示头像。周边入口目前还是占位，请不要把示例当成真实福利。</p>
       </div>
     </section>
 
@@ -165,37 +165,58 @@
       </div>
     </section>
 
+    <section class="section cloud-section" style="padding-top:0" id="talk">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <div>
+            <p class="kicker">讨论</p>
+            <h2>大家在聊什么</h2>
+            <p class="desc">把出现得最多的词放在正中，旁边是最近大家聊得比较多的话题。</p>
+          </div>
+        </div>
+        <div class="cloud-board reveal">
+          <div class="cloud-canvas" id="word-cloud" role="img" aria-label="话题词云"></div>
+          <aside class="cloud-top5">
+            <p class="cloud-top5-kicker">热议</p>
+            <h3>TOP 5</h3>
+            <ol class="cloud-rank" id="cloud-rank"></ol>
+          </aside>
+        </div>
+        <p class="cloud-caption">来自评论区与视频话题</p>
+      </div>
+    </section>
+
     <section class="section" style="padding-top:0">
       <div class="wrap">
         <div class="sec-head reveal">
           <div>
             <p class="kicker">留言</p>
             <h2>粉丝留言墙</h2>
-            <p class="desc">从抖音评论区里选出和视频相关的留言，放在这里一起看。本站不展示粉丝昵称或头像，统一署名为「抖音网友」。评论保持原文。</p>
+            <p class="desc">从抖音评论区里选出和视频相关的留言，放在这里一起看。粉丝昵称保留首字、其余打码，不展示头像。评论正文保持原文。</p>
             <p class="wall-note">精选自抖音评论区</p>
           </div>
         </div>
         <div class="wall-grid wall-grid--few">
           <article class="msg-card reveal">
             <div class="quote" aria-hidden="true">“</div>
-            <p>我是卡在交钱这一步了，不翻打不开</p>
+            <p>我是卡在交钱这一步了，不*打不开</p>
             <div class="msg-replies">
               <div class="msg-reply is-author">
                 <p class="msg-reply-who">壮尼Ni 回复</p>
                 <p>可以支付宝呀</p>
               </div>
               <div class="msg-reply">
-                <p class="msg-reply-who">抖音网友</p>
+                <p class="msg-reply-who">一*</p>
                 <p>回复壮尼 Ni:打不开付款页面</p>
               </div>
               <div class="msg-reply is-author">
                 <p class="msg-reply-who">壮尼Ni 回复</p>
-                <p>如果是支付的二维码打不开，你可以试一下进入支付页面后，把魔法关一下。</p>
+                <p>回复一*:如果是支付的二维码打不开，你可以试一下进入支付页面后，把**关一下。</p>
               </div>
             </div>
             <div class="msg-foot">
             <div class="who">
-              <span>抖音网友</span>
+              <span>一*</span>
               <time datetime="2026-11-17">2026年11月17日</time>
             </div>
             <p class="msg-source">来自视频《<a href="https://www.douyin.com/video/7708758969006705960" target="_blank" rel="noopener noreferrer">同一个账号，网页能用，电脑本地端死活登不上</a>》</p>
@@ -212,7 +233,7 @@
             </div>
             <div class="msg-foot">
             <div class="who">
-              <span>抖音网友</span>
+              <span>天**</span>
               <time datetime="2026-11-16">2026年11月16日</time>
             </div>
             <p class="msg-source">来自视频《<a href="https://www.douyin.com/video/7708559643336822051" target="_blank" rel="noopener noreferrer">请了个AI老师，第一天就把我骂醒了</a>》</p>
@@ -244,6 +265,55 @@
           </fieldset>
           <p class="form-goto"><a class="text-link" href="https://www.douyin.com/user/MS4wLjABAAAAlTF3TwGhg16B6VwjL_dzHsi8J62JZuKCddjaZP0l3f4" target="_blank" rel="noopener noreferrer">去抖音评论 →</a></p>
         </form>
+      </div>
+    </section>
+
+    <section class="section og-section" style="padding-top:0" id="old-fans">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <div>
+            <p class="kicker">关注者</p>
+            <h2>老粉丝</h2>
+            <p class="desc">感谢最早一批关注我的人。</p>
+          </div>
+        </div>
+        <ol class="fan-timeline">
+          <li class="fan-card reveal">
+            <div class="fan-avatar">
+              <img src="assets/img/fans/fan1.webp" width="320" height="320" alt="">
+            </div>
+            <div class="fan-body">
+              <div class="fan-name-row">
+                <p class="fan-name">天**</p>
+                <span class="fan-badge">初代粉丝</span>
+              </div>
+              <p class="fan-when"><time datetime="2026-11-15">2026-11-15 前已关注</time></p>
+            </div>
+          </li>
+          <li class="fan-card reveal">
+            <div class="fan-avatar">
+              <img src="assets/img/fans/fan2.webp" width="320" height="320" alt="">
+            </div>
+            <div class="fan-body">
+              <div class="fan-name-row">
+                <p class="fan-name">用***</p>
+              </div>
+              <p class="fan-when"><time datetime="2026-11-15">关注于 2026-11-15</time></p>
+            </div>
+          </li>
+          <li class="fan-card reveal">
+            <div class="fan-avatar">
+              <img src="assets/img/fans/fan3.webp" width="320" height="320" alt="">
+            </div>
+            <div class="fan-body">
+              <div class="fan-name-row">
+                <p class="fan-name">唔*</p>
+                <span class="fan-tag">互相关注</span>
+              </div>
+              <p class="fan-when"><time datetime="2026-11-17">关注于 2026-11-17</time></p>
+            </div>
+          </li>
+        </ol>
       </div>
     </section>
 
@@ -338,6 +408,46 @@
       </div>
     </div>
   </footer>
+  <!-- DEMO 词云数据 -->
+  <script>
+  window.ZN_CLOUD_WORDS = [
+    { word: "打不开", count: 36 },
+    { word: "AI老师", count: 22 },
+    { word: "DeepSeek", count: 20 },
+    { word: "热量", count: 18 },
+    { word: "AI工具", count: 16 },
+    { word: "桌面端", count: 13 },
+    { word: "agent", count: 12 },
+    { word: "支付宝", count: 12 },
+    { word: "提示词", count: 11 },
+    { word: "工作流", count: 11 },
+    { word: "教程", count: 10, vertical: true },
+    { word: "健身", count: 10, vertical: true },
+    { word: "硬件", count: 9, vertical: true },
+    { word: "本地端", count: 9 },
+    { word: "登不上", count: 8 },
+    { word: "零基础", count: 8 },
+    { word: "自动化", count: 7 },
+    { word: "二维码", count: 7 },
+    { word: "外卖", count: 7 },
+    { word: "半马", count: 6, vertical: true },
+    { word: "账号", count: 6 },
+    { word: "网页", count: 6 },
+    { word: "电脑", count: 6 },
+    { word: "骂醒", count: 6, vertical: true },
+    { word: "harness", count: 5 },
+    { word: "交钱", count: 5 },
+    { word: "热量债", count: 5 },
+    { word: "支付", count: 4 },
+    { word: "摄入", count: 4 },
+    { word: "第一天", count: 4 },
+    { word: "实操", count: 4 },
+    { word: "避坑", count: 3 },
+    { word: "付款页面", count: 3 },
+    { word: "开蒙", count: 3 },
+    { word: "训练", count: 3 }
+  ];
+  </script>
   <script src="assets/main.js"></script>
 </body>
 </html>
