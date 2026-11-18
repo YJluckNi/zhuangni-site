@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI 项目 · 壮尼Ni</title>
-  <meta name="description" content="壮尼Ni 的 AI 项目与案例。当前为占位展示，待补充真实作品。">
+  <meta name="description" content="壮尼Ni 的 AI 项目：热量债、网络与服务器实践，以及学习、内容和硬件方向上的探索。">
   <meta name="theme-color" content="#080809">
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -25,7 +25,8 @@
           <a href="articles.html">文章</a>
           <a href="about.html">关于</a>
           <a href="life.html">生活</a>
-          <a class="nav-cta" href="contact.html">合作</a>
+          <a href="fans.html">粉丝</a>
+          <a href="contact.html" class="nav-cta">合作</a>
       </nav>
       <button class="menu-btn" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="site-menu">
         <span></span><span></span>
@@ -39,6 +40,7 @@
           <a href="articles.html">文章</a>
           <a href="about.html">关于</a>
           <a href="life.html">生活</a>
+          <a href="fans.html">粉丝</a>
           <a href="contact.html">合作</a>
       <a class="btn btn-primary menu-cta" href="contact.html">商务合作</a>
     </nav>
@@ -54,77 +56,81 @@
       <div class="wrap">
         <p class="kicker reveal">AI 项目</p>
         <h1 class="reveal">用 AI 做出来的东西</h1>
-        <p class="lead reveal">【待补充】这一页用来放完整的项目与案例。下面六张卡片都是结构示例，等有了真实作品再替换。</p>
+        <p class="lead reveal">从自己真正遇到的问题出发，做成能重复使用的方法。有的已经在日常里使用，有的还在试验或计划中。</p>
       </div>
     </section>
     <section class="section" style="padding-top:0">
       <div class="wrap">
         <div class="filters reveal" data-filter-group="projects">
           <button class="chip is-active" type="button" data-filter="all">全部</button>
-          <button class="chip" type="button" data-filter="tool">工具示例</button>
-          <button class="chip" type="button" data-filter="flow">工作流示例</button>
-          <button class="chip" type="button" data-filter="hw">硬件示例</button>
-          <button class="chip" type="button" data-filter="life">生活示例</button>
+          <button class="chip" type="button" data-filter="tool">工具</button>
+          <button class="chip" type="button" data-filter="flow">工作流</button>
+          <button class="chip" type="button" data-filter="hw">硬件</button>
+          <button class="chip" type="button" data-filter="life">生活</button>
         </div>
         <div class="grid-3">
 
           <article class="card reveal" data-filter-item="projects" data-cats="tool life">
-            <div class="card-cover"><img src="assets/img/project-01.webp" alt="项目封面示例"></div>
+            <div class="card-cover"><img src="assets/img/project-01.webp" alt="热量债项目封面"></div>
             <div class="card-body">
-              <h3>项目名称示例 · 健身助手</h3>
-              <p>【待补充】一句话介绍：这个工具想帮普通人用 AI 安排锻炼。</p>
-              <div class="card-meta"><span class="tag">工具示例</span><span class="tag">健身</span></div>
-              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project.html">查看详情</a></div>
+              <h3>热量债</h3>
+              <p>把平时点的高热量外卖折算成运动量，看要跑多远才能消耗完。</p>
+              <div class="card-meta"><span class="tag">工具</span><span class="tag">健身</span><span class="tag">自己在用</span></div>
+              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project-reli.html">查看详情</a></div>
             </div>
           </article>
 
           <article class="card reveal" data-filter-item="projects" data-cats="tool">
-            <div class="card-cover"><img src="assets/img/project-02.webp" alt="项目封面示例"></div>
+            <div class="card-cover"><img src="assets/img/project-02.webp" alt="网络与服务器实践封面"></div>
             <div class="card-body">
-              <h3>项目名称示例 · 本地工具</h3>
-              <p>【待补充】一句话介绍这件本地小工具做什么。</p>
-              <div class="card-meta"><span class="tag">工具示例</span><span class="tag">【待补充】</span></div>
-              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project.html">查看详情</a></div>
+              <h3>网络与服务器实践</h3>
+              <p>面向个人学习的网络与服务器搭建，方便更顺畅地使用海外 AI 服务。</p>
+              <div class="card-meta"><span class="tag">实践</span><span class="tag">学习</span><span class="tag">自己在用</span></div>
+              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project-network.html">查看详情</a></div>
             </div>
           </article>
 
+          <!-- DEMO -->
+          <article class="card reveal" data-filter-item="projects" data-cats="tool">
+            <div class="card-cover"><img src="assets/img/project-03.webp" alt="开蒙老师项目封面"></div>
+            <div class="card-body">
+              <h3>开蒙老师</h3>
+              <p>请一个要求明确的 AI 老师，把「不会写代码」一点一点补上。</p>
+              <div class="card-meta"><span class="tag">工具</span><span class="tag">学习</span><span class="tag">自己在用</span></div>
+              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project-kaimeng.html">查看详情</a></div>
+            </div>
+          </article>
+
+          <!-- DEMO -->
           <article class="card reveal" data-filter-item="projects" data-cats="flow">
-            <div class="card-cover"><img src="assets/img/project-03.webp" alt="项目封面示例"></div>
+            <div class="card-cover"><img src="assets/img/project-04.webp" alt="分镜本项目封面"></div>
             <div class="card-body">
-              <h3>项目名称示例 · 学习工作流</h3>
-              <p>【待补充】一句话介绍这条工作流怎么被用起来。</p>
-              <div class="card-meta"><span class="tag">工作流示例</span><span class="tag">教程向</span></div>
-              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project.html">查看详情</a></div>
+              <h3>分镜本</h3>
+              <p>从选题到钩子、分镜和口播稿，先把一支短视频在纸上跑通。</p>
+              <div class="card-meta"><span class="tag">工作流</span><span class="tag">内容</span><span class="tag">自己在用</span></div>
+              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project-fenjing.html">查看详情</a></div>
             </div>
           </article>
 
+          <!-- DEMO -->
+          <article class="card reveal" data-filter-item="projects" data-cats="tool">
+            <div class="card-cover"><img src="assets/img/project-05.webp" alt="桌边实验项目封面"></div>
+            <div class="card-body">
+              <h3>桌边实验</h3>
+              <p>试着让 AI 在自己的电脑上动手，而不是只待在网页对话框里。</p>
+              <div class="card-meta"><span class="tag">工具</span><span class="tag">本地</span><span class="tag">试验中</span></div>
+              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project-agent.html">查看详情</a></div>
+            </div>
+          </article>
+
+          <!-- DEMO -->
           <article class="card reveal" data-filter-item="projects" data-cats="hw">
-            <div class="card-cover"><img src="assets/img/project-04.webp" alt="项目封面示例"></div>
+            <div class="card-cover"><img src="assets/img/project-06.webp" alt="下一站硬件项目封面"></div>
             <div class="card-body">
-              <h3>项目名称示例 · 硬件探索</h3>
-              <p>【待补充】一句话介绍硬件方向的一次尝试。</p>
-              <div class="card-meta"><span class="tag">硬件示例</span><span class="tag">探索中</span></div>
-              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project.html">查看详情</a></div>
-            </div>
-          </article>
-
-          <article class="card reveal" data-filter-item="projects" data-cats="life tool">
-            <div class="card-cover"><img src="assets/img/project-05.webp" alt="项目封面示例"></div>
-            <div class="card-body">
-              <h3>项目名称示例 · 生活记录</h3>
-              <p>【待补充】一句话介绍它如何记下日常和饮食。</p>
-              <div class="card-meta"><span class="tag">生活示例</span><span class="tag">工具示例</span></div>
-              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project.html">查看详情</a></div>
-            </div>
-          </article>
-
-          <article class="card reveal" data-filter-item="projects" data-cats="flow">
-            <div class="card-cover"><img src="assets/img/project-06.webp" alt="项目封面示例"></div>
-            <div class="card-body">
-              <h3>项目名称示例 · 教程配套</h3>
-              <p>【待补充】一句话介绍和某篇教程配套的小项目。</p>
-              <div class="card-meta"><span class="tag">工作流示例</span><span class="tag">教程向</span></div>
-              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project.html">查看详情</a></div>
+              <h3>下一站硬件</h3>
+              <p>想把健身教练从屏幕里拿出来，做成能随身带着的东西。</p>
+              <div class="card-meta"><span class="tag">硬件</span><span class="tag">计划中</span></div>
+              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="project-hardware.html">查看详情</a></div>
             </div>
           </article>
 
@@ -141,7 +147,7 @@
             <img src="assets/img/avatar.webp" width="30" height="30" alt="">
             壮尼<span class="ni">Ni</span>
           </a>
-          <p>用 AI 搞锻炼，雄起 不会写代码。除署名、简介与抖音视频外，站内其余内容均为占位，待补充。</p>
+          <p>用 AI 搞锻炼，雄起 不会写代码。在长沙工作，业余做 AI 内容：工具、教程，也在看硬件方向。</p>
         </div>
         <div>
           <h4>页面</h4>
@@ -151,12 +157,14 @@
             <li><a href="articles.html">文章与教程</a></li>
             <li><a href="about.html">关于我</a></li>
             <li><a href="life.html">生活与健身</a></li>
+            <li><a href="fans.html">粉丝页</a></li>
             <li><a href="contact.html">商务合作</a></li>
           </ul>
         </div>
         <div>
           <h4>关注</h4>
           <ul>
+            <li><a href="mailto:YJluck2000@outlook.com">YJluck2000@outlook.com</a></li>
             <li><a href="https://www.douyin.com/user/MS4wLjABAAAAlTF3TwGhg16B6VwjL_dzHsi8J62JZuKCddjaZP0l3f4" target="_blank" rel="noopener noreferrer">抖音 24638628171</a></li>
             <li>哔哩哔哩 · 即将开通</li>
           </ul>
@@ -164,7 +172,7 @@
       </div>
       <div class="footer-bottom">
         <span>壮尼Ni · 个人网站</span>
-        <span>占位内容将由本人陆续替换</span>
+        <span>长沙</span>
       </div>
     </div>
   </footer>
