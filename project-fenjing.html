@@ -9,7 +9,20 @@
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="assets/style.css">
-  <script>document.documentElement.classList.add("js");</script>
+  <script>
+(function(){
+  var t="dark";
+  try {
+    var s=localStorage.getItem("zn-theme");
+    if(s==="light"||s==="dark") t=s;
+    else if(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches) t="light";
+  } catch(e) {}
+  document.documentElement.setAttribute("data-theme", t);
+  document.documentElement.classList.add("js");
+  var m=document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute("content", t==="light" ? "#f4efe6" : "#080809");
+})();
+</script>
 </head>
 <body>
   <a class="skip" href="#main">跳到正文</a>
@@ -28,9 +41,19 @@
           <a href="fans.html">粉丝</a>
           <a href="contact.html" class="nav-cta">合作</a>
       </nav>
-      <button class="menu-btn" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="site-menu">
-        <span></span><span></span>
-      </button>
+      <div class="header-tools">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换为浅色外观" aria-pressed="false">
+          <span class="theme-toggle-icon icon-sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v1.6M12 19.4V21M4.5 4.5l1.1 1.1M18.4 18.4l1.1 1.1M3 12h1.6M19.4 12H21M4.5 19.5l1.1-1.1M18.4 5.6l1.1-1.1"/></svg>
+          </span>
+          <span class="theme-toggle-icon icon-moon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A7.5 7.5 0 0 1 9.5 4 7.5 7.5 0 1 0 20 14.5z"/></svg>
+          </span>
+        </button>
+        <button class="menu-btn" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="site-menu">
+          <span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
   <div class="menu-overlay" id="site-menu">
@@ -42,6 +65,17 @@
           <a href="life.html">生活</a>
           <a href="fans.html">粉丝</a>
           <a href="contact.html">合作</a>
+      <div class="menu-theme">
+        <span>外观</span>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换为浅色外观" aria-pressed="false">
+          <span class="theme-toggle-icon icon-sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v1.6M12 19.4V21M4.5 4.5l1.1 1.1M18.4 18.4l1.1 1.1M3 12h1.6M19.4 12H21M4.5 19.5l1.1-1.1M18.4 5.6l1.1-1.1"/></svg>
+          </span>
+          <span class="theme-toggle-icon icon-moon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A7.5 7.5 0 0 1 9.5 4 7.5 7.5 0 1 0 20 14.5z"/></svg>
+          </span>
+        </button>
+      </div>
       <a class="btn btn-primary menu-cta" href="contact.html">商务合作</a>
     </nav>
   </div>

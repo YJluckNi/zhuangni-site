@@ -126,4 +126,27 @@
       if (msg) msg.classList.add("is-show");
     });
   }
+
+  /* 深色 / 浅色 */
+  function currentTheme() {
+    return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  }
+  function applyTheme(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    try { localStorage.setItem("zn-theme", t); } catch (err) {}
+    document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
+      btn.setAttribute("aria-label", t === "dark" ? "切换为浅色外观" : "切换为深色外观");
+      btn.setAttribute("aria-pressed", t === "light" ? "true" : "false");
+    });
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", t === "light" ? "#f4efe6" : "#080809");
+  }
+  document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.documentElement.classList.add("theme-ready");
+      applyTheme(currentTheme() === "dark" ? "light" : "dark");
+    });
+  });
+  applyTheme(currentTheme());
+  requestAnimationFrame(() => document.documentElement.classList.add("theme-ready"));
 })();
