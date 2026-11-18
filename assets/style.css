@@ -111,6 +111,7 @@ html.theme-ready .chip,
 html.theme-ready .theme-toggle,
 html.theme-ready .article-row,
 html.theme-ready .msg-card,
+html.theme-ready .msg-reply,
 html.theme-ready .plan-item {
   transition: background-color 0.4s var(--ease), color 0.4s var(--ease),
     border-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
@@ -1192,7 +1193,8 @@ html[data-theme="light"] .masonry figcaption {
   color: var(--gold);
   opacity: 0.7;
 }
-.msg-card p { color: var(--body-copy); font-size: 15px; line-height: 1.7; flex: 1; }
+.msg-card p { color: var(--body-copy); font-size: 15px; line-height: 1.7; }
+.msg-foot { margin-top: auto; }
 .msg-card .who {
   display: flex;
   justify-content: space-between;
@@ -1201,6 +1203,58 @@ html[data-theme="light"] .masonry figcaption {
   font-size: 13px;
   border-top: 1px solid var(--line);
   padding-top: 12px;
+}
+.wall-grid--few {
+  grid-template-columns: 1fr 1fr;
+  max-width: 980px;
+}
+.wall-note {
+  margin: 10px 0 0;
+  color: var(--faint);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+.msg-replies {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.msg-reply {
+  border-left: 2px solid var(--line-strong);
+  padding: 10px 14px;
+  background: var(--control-bg);
+  border-radius: 0 12px 12px 0;
+}
+.msg-reply.is-author {
+  border-left-color: var(--gold);
+  background: var(--gold-soft);
+}
+.msg-reply-who {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+}
+.msg-reply p {
+  margin: 0;
+  flex: none;
+  font-size: 14px;
+}
+.msg-card .msg-source {
+  margin: -4px 0 0;
+  color: var(--faint);
+  font-size: 12px;
+  line-height: 1.6;
+  flex: none;
+}
+.msg-source a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+.msg-source a:hover { color: var(--gold); }
+.form-goto {
+  margin: 16px 0 0;
 }
 
 .join-grid {
@@ -1244,12 +1298,14 @@ html[data-theme="light"] .masonry figcaption {
 }
 
 @media (max-width: 1020px) {
-  .wall-grid { grid-template-columns: 1fr 1fr; }
+  .wall-grid,
+  .wall-grid--few { grid-template-columns: 1fr 1fr; }
   .channel-grid, .join-grid { grid-template-columns: 1fr; }
   .qr-frame { max-width: 320px; }
 }
 @media (max-width: 640px) {
-  .wall-grid { grid-template-columns: 1fr; }
+  .wall-grid,
+  .wall-grid--few { grid-template-columns: 1fr; }
   .channel-card { flex-direction: column; align-items: flex-start; }
 }
 
