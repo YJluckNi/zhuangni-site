@@ -1869,3 +1869,90 @@ html[data-theme="light"] .masonry figcaption {
   .highlights { grid-template-columns: 1fr; }
   .journal-item { grid-template-columns: 1fr; gap: 8px; padding: 22px 0; }
 }
+
+/* ---------- 飞书同步：合作表单与渲染补充 ---------- */
+:root {
+  --ok-ink: #9fd6a8;
+  --ok-line: rgba(120, 200, 140, 0.38);
+  --ok-bg: rgba(120, 200, 140, 0.08);
+  --err-ink: #f0a39a;
+  --err-line: rgba(232, 120, 105, 0.42);
+  --err-bg: rgba(232, 120, 105, 0.08);
+}
+html[data-theme="light"] {
+  --ok-ink: #2f6b3a;
+  --ok-line: rgba(47, 107, 58, 0.35);
+  --ok-bg: rgba(47, 107, 58, 0.07);
+  --err-ink: #9a3324;
+  --err-line: rgba(154, 51, 36, 0.35);
+  --err-bg: rgba(154, 51, 36, 0.06);
+}
+/* 未配置 Worker（或 file:// 打开）时显示「暂未开通」文案；配置后显示正式文案 */
+html:not([data-feishu]) .feishu-on-only,
+html[data-feishu="off"] .feishu-on-only { display: none; }
+html[data-feishu]:not([data-feishu="off"]) .feishu-off-only { display: none; }
+
+.form-row label .req { color: var(--gold); margin-left: 2px; }
+.form-row select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 38px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 52%, calc(100% - 15px) 52%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  color: var(--text);
+}
+.form-row select option { background: var(--bg-soft); color: var(--text); }
+.form-row [aria-invalid="true"] {
+  border-color: var(--err-line);
+  box-shadow: 0 0 0 3px var(--err-bg);
+}
+.form-count { align-self: flex-end; font-size: 12px; color: var(--faint); margin-top: -2px; }
+.hp-field {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+}
+.form { position: relative; }
+.form-actions {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+}
+.form-actions .btn[disabled] { opacity: 0.6; cursor: progress; }
+.form-privacy { margin: 0; color: var(--faint); font-size: 13px; }
+.form-msg.is-ok { border-style: solid; border-color: var(--ok-line); background: var(--ok-bg); color: var(--ok-ink); }
+.form-msg.is-err { border-style: solid; border-color: var(--err-line); background: var(--err-bg); color: var(--err-ink); }
+.form-msg.is-wait { border-style: dashed; }
+
+/* 老粉丝：没同意展示头像时用首字圆形占位 */
+.fan-avatar.is-initial span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--cover-bg);
+  color: var(--gold);
+  font-size: 32px;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 3px var(--card);
+}
+/* 文章没有封面时的占位块 */
+.article-cover-empty {
+  display: block;
+  width: 200px;
+  height: 124px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold-soft), transparent 70%), var(--cover-bg);
+  border: 1px solid var(--line);
+}
+@media (max-width: 640px) {
+  .article-cover-empty { width: 100%; height: 120px; }
+}

@@ -102,13 +102,13 @@
   /* 筛选标签 */
   document.querySelectorAll("[data-filter-group]").forEach((group) => {
     const name = group.getAttribute("data-filter-group");
-    const items = document.querySelectorAll(`[data-filter-item="${name}"]`);
     group.querySelectorAll("[data-filter]").forEach((chip) => {
       chip.addEventListener("click", () => {
         group.querySelectorAll("[data-filter]").forEach((c) => c.classList.remove("is-active"));
         chip.classList.add("is-active");
         const key = chip.getAttribute("data-filter");
-        items.forEach((item) => {
+        /* 点击时再取列表，飞书同步替换卡片后筛选依然有效 */
+        document.querySelectorAll(`[data-filter-item="${name}"]`).forEach((item) => {
           const cats = (item.getAttribute("data-cats") || "").split(/\s+/);
           const show = key === "all" || cats.includes(key);
           item.classList.toggle("is-hidden", !show);
@@ -150,7 +150,9 @@
   applyTheme(currentTheme());
   requestAnimationFrame(() => document.documentElement.classList.add("theme-ready"));
 
-  /* 词云：螺旋碰撞布局，数据来自页面内 ZN_CLOUD_WORDS */
+  /* 词云：螺旋碰撞布局，数据来自页面内 ZN_CLOUD_WORDS（配置飞书后由 feishu-sync.js 更新） */
+  let cloudLayout = null;
+  let cloudResizeBound = false;
   function initWordCloud() {
     const canvas = document.getElementById("word-cloud");
     const rankBox = document.getElementById("cloud-rank");
@@ -326,12 +328,18 @@
     }
 
     layout();
-    let timer = 0;
-    window.addEventListener("resize", () => {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(layout, 180);
-    });
+    cloudLayout = layout;
+    if (!cloudResizeBound) {
+      cloudResizeBound = true;
+      let timer = 0;
+      window.addEventListener("resize", () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => { if (cloudLayout) cloudLayout(); }, 180);
+      });
+    }
   }
+  /* 飞书同步拿到新词后调用，重新排版词云 */
+  window.ZN_refreshWordCloud = initWordCloud;
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(initWordCloud).catch(initWordCloud);
   } else {

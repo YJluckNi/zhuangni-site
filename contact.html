@@ -176,38 +176,57 @@
           </div>
         </div>
 
-        <form class="form reveal" data-static-form action="#" method="post">
+        <form class="form reveal" data-feishu-form="contact" action="#" method="post" novalidate data-offline-msg="表单尚未接通，内容不会被发送。请直接写信到 YJluck2000@outlook.com，或通过抖音主页联系。">
           <h2>先写一份意向</h2>
-          <p class="note">这个表单目前还不会发送到我这里。想合作的话，请直接写信到 <a class="text-link" href="mailto:YJluck2000@outlook.com">YJluck2000@outlook.com</a>，或通过抖音主页联系。</p>
+          <p class="note">
+            <span class="feishu-off-only">这个表单目前还不会发送到我这里。想合作的话，请直接写信到 <a class="text-link" href="mailto:YJluck2000@outlook.com">YJluck2000@outlook.com</a>，或通过抖音主页联系。</span>
+            <span class="feishu-on-only">填好后提交，我会通过你留的联系方式回复。也可以直接写信到 <a class="text-link" href="mailto:YJluck2000@outlook.com">YJluck2000@outlook.com</a>，或通过抖音主页联系。</span>
+          </p>
           <div class="form-grid">
             <div class="form-row">
-              <label for="name">称呼</label>
-              <input id="name" name="name" type="text" placeholder="怎么称呼你" autocomplete="name">
+              <label for="name">称呼 <span class="req" aria-hidden="true">*</span></label>
+              <input id="name" name="name" type="text" placeholder="怎么称呼你" autocomplete="name" maxlength="30" required>
             </div>
             <div class="form-row">
-              <label for="email">邮箱</label>
-              <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email">
+              <label for="contact">联系方式 <span class="req" aria-hidden="true">*</span></label>
+              <input id="contact" name="contact" type="text" placeholder="微信 / 手机 / 邮箱，留一个就行" autocomplete="off" maxlength="60" required>
             </div>
-            <div class="form-row full">
-              <label for="type">合作类型</label>
-              <select id="type" name="type">
+            <div class="form-row">
+              <label for="type">合作类型 <span class="req" aria-hidden="true">*</span></label>
+              <select id="type" name="type" required>
                 <option value="">请选择</option>
-                <option>AI 产品推广 / 测评</option>
-                <option>AI 工具定制开发</option>
-                <option>课程 / 培训合作</option>
-                <option>硬件产品合作</option>
-                <option>其他</option>
+                <option value="AI 产品推广/测评">AI 产品推广 / 测评</option>
+                <option value="AI 工具定制开发">AI 工具定制开发</option>
+                <option value="课程/培训合作">课程 / 培训合作</option>
+                <option value="硬件产品合作">硬件产品合作</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="budget">预算区间</label>
+              <select id="budget" name="budget">
+                <option value="待沟通">待沟通</option>
+                <option value="5千以下">5 千以下</option>
+                <option value="5千–2万">5 千 – 2 万</option>
+                <option value="2万–5万">2 万 – 5 万</option>
+                <option value="5万以上">5 万以上</option>
               </select>
             </div>
             <div class="form-row full">
-              <label for="msg">简述</label>
-              <textarea id="msg" name="message" placeholder="请简单说明来意、时间和预算范围。提交前请改用邮件联系。"></textarea>
+              <label for="msg">需求描述 <span class="req" aria-hidden="true">*</span></label>
+              <textarea id="msg" name="message" placeholder="请简单说明来意、产品或需求、时间安排。10–1000 字。" maxlength="1000" required></textarea>
+              <span class="form-count" data-count-for="message" aria-hidden="true">0 / 1000</span>
+            </div>
+            <div class="hp-field" aria-hidden="true">
+              <label for="website">网站（请留空）</label>
+              <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
             </div>
           </div>
-          <div style="margin-top:20px">
-            <button class="btn btn-primary" type="submit">发送（暂未开通）</button>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><span class="feishu-off-only">发送（暂未开通）</span><span class="feishu-on-only">提交意向</span></button>
+            <p class="form-privacy">提交的内容只用来回复这次合作咨询，不会公开。</p>
           </div>
-          <div class="form-msg" role="status">表单尚未接通，内容不会被发送。请直接写信到 YJluck2000@outlook.com，或通过抖音主页联系。</div>
+          <div class="form-msg" role="status" aria-live="polite"></div>
         </form>
       </div>
     </section>
@@ -252,5 +271,6 @@
     </div>
   </footer>
   <script src="assets/main.js"></script>
+  <script src="assets/feishu-sync.js"></script>
 </body>
 </html>
