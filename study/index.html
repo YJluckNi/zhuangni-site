@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="学习监督系统：在浏览器里用摄像头看住专注度。画面只在本地分析，不会上传。" />
+    <title>学习监督系统</title>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('zn-theme')
+          var theme = stored === 'dark' || stored === 'light'
+            ? stored
+            : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          document.documentElement.setAttribute('data-theme', theme)
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light')
+        }
+      })()
+    </script>
+    <script type="module" crossorigin src="./assets/index-MK7RLcVg.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Bf9azh53.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
