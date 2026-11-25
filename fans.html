@@ -254,6 +254,23 @@
             <p class="desc">感谢最早一批关注我的人。</p>
           </div>
         </div>
+        <div class="fan-box reveal" data-fan-box>
+          <div class="fan-box-stage">
+            <span class="fan-box-slot" aria-hidden="true"></span>
+            <canvas class="fan-box-canvas" aria-hidden="true"></canvas>
+            <div class="fan-box-tip" role="status" aria-live="polite"></div>
+          </div>
+          <div class="fan-box-bar">
+            <p class="fan-box-hint"><span class="fan-box-dot" aria-hidden="true"></span>点一点、晃晃鼠标，和老粉丝们打个招呼</p>
+            <div class="fan-box-meta">
+              <span class="fan-box-count" aria-live="polite"></span>
+              <button type="button" class="fan-box-replay">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                再投一次
+              </button>
+            </div>
+          </div>
+        </div>
         <ol class="fan-timeline" data-feishu-list="fans">
           <li class="fan-card reveal">
             <div class="fan-avatar">
@@ -427,6 +444,7 @@
   ];
   </script>
   <script src="assets/main.js"></script>
+  <script src="assets/fan-box.js"></script>
   <script src="assets/feishu-sync.js"></script>
 </body>
 </html>

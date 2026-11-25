@@ -233,6 +233,7 @@
       return li;
     });
     replaceList(box, nodes);
+    if (nodes.length && typeof window.ZN_refreshFanBox === "function") window.ZN_refreshFanBox();
   }
 
   function renderWords(list) {
