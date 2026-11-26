@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
     <meta name="description" content="学习监督系统：在浏览器里用摄像头看住专注度。画面只在本地分析。只上传你同意的统计数字。" />
     <title>学习监督系统</title>
     <script>
@@ -19,7 +20,14 @@
         }
       })()
     </script>
-    <script type="module" crossorigin src="./assets/index-C_xHRRVg.js"></script>
+    <style id="zn-gate-boot">
+      html { background: #080809; }
+      html[data-theme="light"] { background: #f4efe6; }
+      html:not(.zn-study-unlocked) #root { display: none !important; visibility: hidden !important; }
+    </style>
+    <script src="./gate.js"></script>
+    <!-- 更新学习页时：把新的应用脚本 type="module" 改成 type="zn-app"，并保留上一行的 gate.js -->
+    <script type="zn-app" crossorigin src="./assets/index-C_xHRRVg.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BLKZqxrE.css">
   </head>
   <body>
