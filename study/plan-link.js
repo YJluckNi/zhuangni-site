@@ -165,7 +165,7 @@
       "#znpl .it .m{font-size:11px;color:#9a958b;margin-top:2px}",
       "#znpl .it.od .m{color:#f0a39a}",
       "html[data-theme='light'] #znpl .it.od .m{color:#a8392b}",
-      "#znpl .it .pick{margin-left:auto;flex:none;font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px solid rgba(232,200,120,.45);color:#e8c878;background:transparent;cursor:pointer;white-space:nowrap}",
+      "#znpl .it .pick{margin-left:auto;flex:none;font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px solid rgba(232,200,120,.45);color:#e8c878;background:transparent;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center}",
       "html[data-theme='light'] #znpl .it .pick{color:#7a5610;border-color:rgba(122,86,16,.35)}",
       "#znpl .it.on .pick{background:#e8c878;color:#1a1406;border-color:#e8c878}",
       "#znpl .empty{padding:18px 12px;font-size:12.5px;color:#9a958b;line-height:1.7}",
@@ -194,10 +194,18 @@
     render();
   }
 
-  function planHref() {
+  function keepFeishu() {
     var keep = "";
     try { if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) keep = new URLSearchParams(location.search).get("feishu") || ""; } catch (e) {}
+    return keep;
+  }
+  function planHref() {
+    var keep = keepFeishu();
     return "../plan/" + (keep ? "?feishu=" + encodeURIComponent(keep) : "");
+  }
+  function jianzhiHref() {
+    var keep = keepFeishu();
+    return "../jianzhi/" + (keep ? "?feishu=" + encodeURIComponent(keep) : "");
   }
 
   function render() {
@@ -233,6 +241,22 @@
       var list = el("div", "list");
       if (!td.items.length) list.appendChild(el("div", "empty", "今天没有排期中的任务。去计划拆解给工作项排上日期，或添加临时待办。"));
       td.items.forEach(function (it) {
+        if (it.kind === "weighin") {
+          var rowW = el("div", "it" + (it.done ? " done" : ""));
+          var cbW = el("input"); cbW.type = "checkbox"; cbW.checked = it.done; cbW.disabled = true; cbW.title = it.done ? "今日已称重" : "今日尚未称重";
+          rowW.appendChild(cbW);
+          var midW = el("div"); midW.style.minWidth = "0";
+          midW.appendChild(el("div", "t", "今日称重"));
+          midW.appendChild(el("div", "m", it.done ? "今天已经记过体重" : "打开减值记录，填一下今天的体重"));
+          rowW.appendChild(midW);
+          var go = el("a", "pick", it.done ? "查看" : "去称重");
+          go.href = jianzhiHref();
+          go.addEventListener("click", function (e) { e.stopPropagation(); });
+          rowW.appendChild(go);
+          rowW.addEventListener("click", function () { location.href = jianzhiHref(); });
+          list.appendChild(rowW);
+          return;
+        }
         var on = sel && sel.kind === it.kind && sel.id === it.id && (it.kind === "todo" || sel.planId === it.planId);
         var row = el("div", "it" + (on ? " on" : "") + (it.done ? " done" : "") + (it.overdue ? " od" : ""));
         var cb = el("input"); cb.type = "checkbox"; cb.checked = it.done; cb.title = "标记完成";
@@ -266,8 +290,11 @@
       var sbtn = el("button", "", "● " + stText); sbtn.type = "button"; sbtn.title = (st.message || "") + "（点一下立即同步）";
       sbtn.addEventListener("click", function () { Z.sync(); });
       ft.appendChild(sbtn);
+      var links = el("span"); links.style.cssText = "display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end";
       var a = el("a", "", "打开计划拆解 →"); a.href = planHref();
-      ft.appendChild(a);
+      var jz = el("a", "", "减值记录"); jz.href = jianzhiHref();
+      links.appendChild(a); links.appendChild(jz);
+      ft.appendChild(links);
       panel.appendChild(ft);
       root.appendChild(panel);
     }

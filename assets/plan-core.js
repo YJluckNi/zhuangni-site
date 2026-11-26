@@ -19,6 +19,7 @@
   var K_TOMB = P + "deleted";
   var K_FOCUSQ = P + "focusq";
   var K_STATE = P + "state";
+  var K_WEIGH = P + "weighin";
   var STUDY_HISTORY = "study-focus.history.v1";
   var TIMEOUT = 20000;
 
@@ -391,6 +392,7 @@
       for (var p of dirtyPlans) await pushPlan(p.id);
       var dirtyTodos = rawTodos().filter(function (x) { return !x._sync || x._sync.dirty; });
       for (var x of dirtyTodos) await pushTodo(x.id);
+      if (d.weighIn) applyWeighIn(d.weighIn);
       setState({
         status: "synced", message: "已与飞书同步", lastSync: nowIso(),
         todayFocusMin: typeof d.todayFocusMin === "number" ? d.todayFocusMin : state.todayFocusMin,
@@ -446,10 +448,36 @@
     return { minutes: r1(Math.max(local, remote)), local: r1(local), remote: r1(remote) };
   }
 
+  /* ---------- 今日称重（虚拟待办，完成态只由减值记录页写入） ---------- */
+  function readWeighIn(day) {
+    var local = jget(K_WEIGH, null) || {};
+    var st = state.weighIn || {};
+    var date = day || bjDate();
+    var done = (local.date === date && local.done) || (st.date === date && st.done);
+    var weight = null;
+    if (local.date === date && local.weight != null) weight = local.weight;
+    else if (st.date === date && st.weight != null) weight = st.weight;
+    return { date: date, done: !!done, weight: weight };
+  }
+  function applyWeighIn(w) {
+    if (!w || !w.date) return;
+    var cur = jget(K_WEIGH, null) || {};
+    if (cur.date === w.date && cur.done && !w.done) return;
+    var rec = { date: w.date, done: !!w.done, weight: w.weight || null };
+    jset(K_WEIGH, rec);
+    state.weighIn = rec;
+  }
+
   /* ---------- 今日待办 ---------- */
   function today() {
     var day = bjDate();
     var items = [];
+    var weigh = readWeighIn(day);
+    items.push({
+      key: "weighin:today", kind: "weighin", id: "today", title: "今日称重",
+      date: day, done: weigh.done, overdue: false, focusMin: 0, order: -1,
+      weight: weigh.weight
+    });
     rawPlans().forEach(function (p) {
       var c = WBS.compute(clone(strip(p)));
       c.nodes.forEach(function (n) {
@@ -488,6 +516,7 @@
 
   /** 勾选 / 取消完成（计划任务回写进度和状态，待办回写已完成） */
   function setDone(ref, done) {
+    if (!ref || ref.kind === "weighin") return;
     if (ref.kind === "todo") {
       var t = rawTodos().find(function (x) { return x.id === ref.id; });
       if (t) saveTodo(Object.assign({}, t, { done: !!done, doneAt: done ? nowIso() : "" }));
@@ -522,6 +551,7 @@
     keys.forEach(function (key, i) {
       var order = i + 1;
       var parts = key.split(":");
+      if (parts[0] === "weighin") return;
       if (parts[0] === "todo") {
         var t = todos.find(function (x) { return x.id === parts[1]; });
         if (t && t.order !== order) { t.order = order; t.updatedAt = nowIso(); t._sync = Object.assign({}, t._sync, { dirty: true }); todoChanged = true; }
@@ -553,7 +583,7 @@
     bjDate: bjDate, uid: uid,
     listPlans: listPlans, getPlan: getPlan, savePlan: savePlan, deletePlan: deletePlan, importPlans: importPlans,
     listTodos: listTodos, saveTodo: saveTodo, deleteTodo: deleteTodo,
-    today: today, setDone: setDone, reorder: reorder,
+    today: today, setDone: setDone, reorder: reorder, todayWeighIn: readWeighIn,
     addFocus: addFocus, todayFocus: todayFocus,
     sync: sync, schedule: schedule, state: function () { return Object.assign({}, state); },
     request: req, endpoint: endpoint, hasToken: function () { return !!token(); }

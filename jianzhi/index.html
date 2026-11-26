@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>减值记录 · 壮尼Ni</title>
+<meta name="theme-color" content="#080809">
+<link rel="icon" type="image/png" href="../assets/favicon.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="./jianzhi.css">
+<script>
+(function(){
+  var t="dark";
+  try {
+    var s=localStorage.getItem("zn-theme");
+    if(s==="light"||s==="dark") t=s;
+    else if(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches) t="light";
+  } catch(e) {}
+  document.documentElement.setAttribute("data-theme", t);
+  document.documentElement.classList.add("js");
+  var m=document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute("content", t==="light" ? "#f4efe6" : "#080809");
+})();
+</script>
+<style id="zn-gate-boot">html:not(.zn-gate-unlocked) #app{display:none!important}</style>
+<script src="../assets/feishu-sync.js"></script>
+<script src="../assets/gate.js" data-root="#app" data-title="减值记录" data-lead="这是壮尼的私人减脂记录，请输入密码进入。" data-exit="#btnExit"></script>
+<script type="zn-app" data-type="classic" src="./engine.js"></script>
+<script type="zn-app" data-type="classic" src="./xlsx.js"></script>
+<script type="zn-app" data-type="classic" src="./app.js"></script>
+</head>
+<body class="jz-page">
+
+<header class="site-header is-scrolled wb-header">
+  <div class="wb-header-in">
+    <a class="brand" href="../index.html">
+      <img src="../assets/img/avatar.webp" width="30" height="30" alt="">
+      壮尼<span class="ni">Ni</span>
+    </a>
+    <span class="wb-crumb" aria-current="page">减值记录</span>
+    <div class="wb-header-tools">
+      <nav class="wb-links" aria-label="私人工具">
+        <a href="../study/">学习专注</a>
+        <a href="../plan/">计划拆解</a>
+        <a href="../index.html">回到首页</a>
+      </nav>
+      <button class="wb-sync" id="syncPill" type="button" data-state="idle" title="点一下立即同步"><i></i><span>未同步</span></button>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换为浅色外观" aria-pressed="false">
+        <span class="theme-toggle-icon icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v1.6M12 19.4V21M4.5 4.5l1.1 1.1M18.4 18.4l1.1 1.1M3 12h1.6M19.4 12H21M4.5 19.5l1.1-1.1M18.4 5.6l1.1-1.1"/></svg></span>
+        <span class="theme-toggle-icon icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A7.5 7.5 0 0 1 9.5 4 7.5 7.5 0 1 0 20 14.5z"/></svg></span>
+      </button>
+      <button class="wb-exit" id="btnExit" type="button" hidden title="退出并清除这台设备的解锁状态">退出</button>
+    </div>
+  </div>
+</header>
+
+<div class="app" id="app">
+  <div class="jz-wrap">
+
+    <div class="jz-top">
+      <div class="jz-date"><b id="todayLabel">今天</b><span id="weekdayLabel"></span></div>
+      <button class="icon-btn" id="btnSettings" type="button" title="设置" aria-label="设置">⚙</button>
+    </div>
+
+    <div class="jz-grid">
+
+      <section class="card" id="todayCard">
+        <div class="card-head">
+          <div class="card-title"><span class="cn">今日体重</span></div>
+          <span class="tag" id="todayTag">待记录</span>
+        </div>
+        <div class="bmi-row" id="bmiRow" hidden></div>
+        <div class="weight-row">
+          <input id="weightInput" class="weight-input" type="number" inputmode="decimal" step="0.1" placeholder="" autocomplete="off">
+          <div class="unit">kg</div>
+        </div>
+        <div class="weigh-hint">晨起空腹称，只填这一个数字也够</div>
+        <div class="steppers">
+          <button class="step-btn" type="button" data-delta="-0.1">− 0.1</button>
+          <button class="step-btn" type="button" data-delta="0.1">+ 0.1</button>
+        </div>
+        <div class="opt-row">
+          <label class="opt"><span>睡眠</span><input id="sleepInput" type="number" inputmode="decimal" step="0.5" placeholder="可选"><span>h</span></label>
+          <label class="opt"><span>步数</span><input id="stepsInput" type="number" inputmode="numeric" step="100" placeholder="可选"><span>步</span></label>
+        </div>
+        <div class="opt-row">
+          <button class="opt-btn" type="button" id="btnWorkout"><span class="ob-key">运动</span><span class="ob-val" id="workoutLabel">未记录</span><span class="ob-caret">›</span></button>
+          <label class="opt cheat-opt" id="cheatOpt"><input id="cheatInput" type="checkbox"><span class="cheat-text">放纵餐</span></label>
+        </div>
+
+        <div class="diet-block">
+          <label class="diet-label" for="dietInput">今天吃了什么 <em>一句话即可，保存后可让 AI 拆成三餐</em></label>
+          <textarea id="dietInput" maxlength="400" rows="2" placeholder="例如：早上两个茶叶蛋，中午牛肉面，晚上鸡胸沙拉"></textarea>
+          <div class="diet-actions">
+            <button class="btn ghost small" type="button" id="btnDiet">拆成三餐并估算</button>
+          </div>
+          <div class="meal-list" id="mealList"></div>
+          <div class="diet-result" id="dietResult"></div>
+        </div>
+
+        <button class="btn" type="button" id="btnSave">保 存</button>
+        <div class="feedback" id="feedback"></div>
+      </section>
+
+      <section class="card" id="predictCard">
+        <div class="card-head">
+          <div class="card-title"><span class="cn">达成预测</span></div>
+          <span class="tag gray" id="predictTag">—</span>
+        </div>
+        <div class="pace-banner" id="paceBanner" hidden></div>
+        <div id="predictBody"></div>
+      </section>
+
+      <section class="card jz-span">
+        <div class="card-head">
+          <div class="card-title"><span class="cn">体重趋势</span></div>
+          <span class="tag gray" id="trendTag">7 日趋势</span>
+        </div>
+        <div class="chart-box" id="chartBox"></div>
+        <div class="chart-legend">
+          <span><i class="lg-ema"></i>7 日趋势</span>
+          <span><i class="lg-raw"></i>单日体重</span>
+          <span><i class="lg-goal"></i>目标</span>
+          <span><i class="lg-cheat"></i>放纵餐</span>
+        </div>
+      </section>
+
+      <section class="card" id="calCard">
+        <div class="card-head">
+          <div class="card-title"><span class="cn">热量收支</span></div>
+          <span class="tag gray" id="calTag">—</span>
+        </div>
+        <div id="calChart"></div>
+        <div id="intakeChart"></div>
+        <div id="defChart"></div>
+        <div id="cheatChart"></div>
+      </section>
+
+      <section class="card" id="aiCard">
+        <div class="card-head">
+          <div class="card-title"><span class="cn">AI 分析</span></div>
+          <span class="tag gray" id="aiTag">—</span>
+        </div>
+        <div id="aiBody"></div>
+        <div class="ai-actions">
+          <button class="btn ghost small" type="button" id="btnAI">重新分析</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title"><span class="cn">成就</span></div>
+          <span class="tag gray" id="achTag">—</span>
+        </div>
+        <div class="ach-strip" id="achStrip"></div>
+        <div class="ach-actions">
+          <button class="btn ghost small" type="button" id="btnAchCard">生成本月卡片</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title"><span class="cn">体型记录</span></div>
+          <span class="tag gray" id="photoTag">每周一次 · 只留本机</span>
+        </div>
+        <div class="photo-compare" id="photoCompare" hidden>
+          <div class="cmp-head">
+            <span>同角度前后对比</span>
+            <label class="angle-pick">角度
+              <select id="cmpAngle">
+                <option value="front">正面</option>
+                <option value="side">侧面</option>
+                <option value="back">背面</option>
+                <option value="other">其他</option>
+              </select>
+            </label>
+          </div>
+          <div class="cmp-pair">
+            <figure><img id="cmpLeft" alt="较早"><figcaption id="cmpLeftCap">较早</figcaption></figure>
+            <figure><img id="cmpRight" alt="较新"><figcaption id="cmpRightCap">较新</figcaption></figure>
+          </div>
+          <label class="cmp-slider-wrap">叠化对比 <input id="cmpSlider" type="range" min="0" max="100" value="50"></label>
+          <div class="cmp-overlay" id="cmpOverlay" hidden>
+            <img id="cmpOverA" alt="">
+            <div class="cmp-clip" id="cmpClip"><img id="cmpOverB" alt=""></div>
+          </div>
+        </div>
+        <div class="photo-row" id="photoRow"></div>
+        <div class="photo-actions">
+          <label class="btn ghost small file-btn">拍照 / 选图
+            <input type="file" id="photoInput" accept="image/*" hidden>
+          </label>
+          <select id="photoAngle" class="angle-select" aria-label="拍摄角度">
+            <option value="front">正面</option>
+            <option value="side">侧面</option>
+            <option value="back">背面</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+        <div class="photo-note" id="photoNote">同一角度、同一时间拍，比数字更能看出变化。照片只存在这台设备，不会同步到飞书。</div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title"><span class="cn">每周围度</span></div>
+          <span class="tag gray" id="waistTag">每周一次</span>
+        </div>
+        <div class="week-grid">
+          <div class="field"><label>腰围 (cm)</label><input id="waistInput" type="number" inputmode="decimal" step="0.5" placeholder="必填"></div>
+          <div class="field"><label>臀围</label><input id="hipInput" type="number" inputmode="decimal" step="0.5" placeholder="可选"></div>
+          <div class="field"><label>大腿围</label><input id="thighInput" type="number" inputmode="decimal" step="0.5" placeholder="可选"></div>
+        </div>
+        <div class="waist-actions"><button class="btn ghost" type="button" id="btnWaist">保存本周围度</button></div>
+        <div class="chart-box waist-chart" id="waistChart"></div>
+        <div class="week-note" id="waistNote">腰围是判断“瘦的是不是脂肪”的关键指标，每周固定时间量一次即可。</div>
+      </section>
+
+      <section class="card jz-span">
+        <div class="list-head">
+          <div class="card-title"><span class="cn">全部记录</span></div>
+          <div class="list-tools">
+            <button class="link-btn" type="button" id="btnAddRec">补记以前的日期</button>
+            <button class="link-btn" type="button" id="btnExport">导出 Excel</button>
+          </div>
+        </div>
+        <div id="recentList"><div class="week-note">还没有记录。</div></div>
+      </section>
+
+    </div>
+
+    <div class="footer-note">私人页面 · 体重和围度同步到飞书后台 · 体型照片只留在这台设备 · 预测为基于历史趋势的估算，不构成效果承诺</div>
+  </div>
+</div>
+
+<!-- 运动 -->
+<div class="mask" id="wkMask">
+  <div class="sheet">
+    <h3>记录运动</h3>
+    <div class="wk-list" id="wkList"></div>
+    <div class="met-grid" id="metGrid"></div>
+    <div class="row2">
+      <div class="field"><label>时长（分钟）</label><input id="wkMin" type="number" inputmode="numeric" step="5" placeholder="30"></div>
+      <div class="field"><label>折算消耗</label><input id="wkKcal" type="number" inputmode="numeric" step="10" placeholder="—"></div>
+    </div>
+    <p class="hint" id="wkHint">按体重 × 运动强度自动折算，可手动改。</p>
+    <div class="sheet-actions">
+      <button class="btn ghost" type="button" id="wkCancel">完成</button>
+      <button class="btn" type="button" id="wkSave">添加一条</button>
+    </div>
+  </div>
+</div>
+
+<!-- 记录编辑 / 补记 -->
+<div class="mask" id="recMask">
+  <div class="sheet">
+    <h3 id="recTitle">补记记录</h3>
+    <div class="field"><label>日期 <span class="date-fmt" id="rDateFmt"></span></label><input id="rDate" type="date" lang="zh-CN"></div>
+    <div class="row2">
+      <div class="field"><label>体重 (kg)</label><input id="rWeight" type="number" inputmode="decimal" step="0.1"></div>
+      <div class="field"><label>睡眠 (h)</label><input id="rSleep" type="number" inputmode="decimal" step="0.5"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>步数</label><input id="rSteps" type="number" inputmode="numeric" step="100"></div>
+      <div class="field"><label>运动消耗 (kcal)</label><input id="rWorkout" type="number" inputmode="numeric" step="10"></div>
+    </div>
+    <div class="field"><label>饮食一句话</label><input id="rDiet" type="text" maxlength="200"></div>
+    <div class="field"><label>备注</label><input id="rNote" type="text" maxlength="60"></div>
+    <label class="opt cheat-opt" id="rCheatOpt"><input id="rCheat" type="checkbox"><span class="cheat-text">这一天有放纵餐</span></label>
+    <div class="sheet-actions">
+      <button class="btn ghost" type="button" id="recDelete" hidden>删除</button>
+      <button class="btn ghost" type="button" id="recCancel">取消</button>
+      <button class="btn" type="button" id="recSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 设置 -->
+<div class="mask" id="mask">
+  <div class="sheet">
+    <h3>基础设置</h3>
+    <p class="hint">只需填一次。目标体重决定预测结果；目标日期可以不填。</p>
+    <div class="row2">
+      <div class="field"><label>身高 (cm)</label><input id="pHeight" type="number" inputmode="numeric"></div>
+      <div class="field"><label>年龄</label><input id="pAge" type="number" inputmode="numeric"></div>
+    </div>
+    <div class="field"><label>性别</label>
+      <select id="pSex" class="sheet-select">
+        <option value="male">男</option>
+        <option value="female">女</option>
+      </select>
+    </div>
+    <div class="field"><label>日常活动水平（用于算消耗）</label>
+      <select id="pActivity" class="sheet-select">
+        <option value="sedentary">久坐 · 几乎不运动</option>
+        <option value="light">轻度 · 每周 1—3 次</option>
+        <option value="moderate">中度 · 每周 3—5 次</option>
+        <option value="active">高强度 · 每周 6—7 次</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="field"><label>起始体重 (kg)</label><input id="pStart" type="number" inputmode="decimal" step="0.1"></div>
+      <div class="field"><label>目标体重 (kg)</label><input id="pTarget" type="number" inputmode="decimal" step="0.1"></div>
+    </div>
+    <div class="field"><label>目标日期（可空） <span class="date-fmt" id="pDateFmt"></span></label><input id="pDate" type="date" lang="zh-CN"></div>
+    <p class="hint">饮食估算和曲线分析由网站中转服务完成，无需在页面填写接口密钥。</p>
+    <div class="sheet-actions">
+      <button class="btn ghost" type="button" id="btnCloseSettings">取消</button>
+      <button class="btn" type="button" id="btnSaveProfile">保存设置</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="../assets/main.js"></script>
+</body>
+</html>

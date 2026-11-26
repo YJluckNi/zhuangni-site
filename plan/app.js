@@ -2077,10 +2077,17 @@
     renderAll();
   }
 
+  function keepFeishu() {
+    return /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? (new URLSearchParams(location.search).get('feishu') || '') : '';
+  }
+  function jianzhiHref() {
+    const keep = keepFeishu();
+    return '../jianzhi/' + (keep ? '?feishu=' + encodeURIComponent(keep) : '');
+  }
   function goFocus(ref) {
     if (S.dirty) saveNow();
     const q = ref.kind === 'todo' ? 'todo=' + encodeURIComponent(ref.id) : 'task=' + encodeURIComponent(ref.planId + ':' + ref.id);
-    const keep = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? (new URLSearchParams(location.search).get('feishu') || '') : '';
+    const keep = keepFeishu();
     location.href = '../study/?' + q + (keep ? '&feishu=' + encodeURIComponent(keep) : '');
   }
 
@@ -2145,8 +2152,9 @@
     });
     wrap.appendChild(form);
 
+    const weighins = td.items.filter((i) => i.kind === 'weighin');
     const overdue = td.items.filter((i) => i.overdue);
-    const todays = td.items.filter((i) => !i.overdue);
+    const todays = td.items.filter((i) => !i.overdue && i.kind !== 'weighin');
     const order = overdue.concat(todays).map((i) => i.key);
 
     function move(key, dir) {
@@ -2160,6 +2168,29 @@
     }
 
     function row(it, idx) {
+      if (it.kind === 'weighin') {
+        const r = el('div', 'today-row weighin' + (it.done ? ' done' : ''));
+        r.dataset.key = it.key;
+        const cb = el('input');
+        cb.type = 'checkbox';
+        cb.checked = it.done;
+        cb.disabled = true;
+        cb.setAttribute('aria-label', it.done ? '今日已称重' : '今日尚未称重');
+        r.appendChild(cb);
+        const main = el('div', 'today-main');
+        main.appendChild(el('div', 'today-title', '今日称重'));
+        const meta = el('div', 'today-meta');
+        meta.appendChild(el('span', 'tag', '每日'));
+        meta.appendChild(el('span', '', it.done ? '今天已经记过体重' : '打开减值记录，填一下今天的体重'));
+        main.appendChild(meta);
+        r.appendChild(main);
+        const acts = el('div', 'today-acts');
+        const go = el('a', 'wb-btn accent sm', it.done ? '查看' : '去称重');
+        go.href = jianzhiHref();
+        acts.appendChild(go);
+        r.appendChild(acts);
+        return r;
+      }
       const r = el('div', 'today-row' + (it.done ? ' done' : '') + (it.overdue ? ' overdue' : ''));
       r.dataset.key = it.key;
       const cb = el('input');
@@ -2219,6 +2250,12 @@
     }
 
     let idx = 0;
+    if (weighins.length) {
+      const secW = el('section', 'today-sec weighin');
+      secW.appendChild(el('h3', '', '每日习惯'));
+      weighins.forEach((it) => secW.appendChild(row(it, 0)));
+      wrap.appendChild(secW);
+    }
     if (overdue.length) {
       const sec = el('section', 'today-sec od');
       sec.appendChild(el('h3', '', '已逾期 · ' + overdue.length));

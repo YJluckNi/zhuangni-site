@@ -401,6 +401,7 @@ body.inspector-hidden .inspector { display: none; }
   align-items: center;
   gap: 5px;
 }
+a.wb-btn { text-decoration: none; box-sizing: border-box; }
 .wb-btn:hover { background: var(--w-surface-3); border-color: var(--w-line-2); color: var(--w-ink); }
 .wb-btn:active { transform: translateY(.5px); }
 .wb-btn.accent {
