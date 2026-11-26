@@ -261,15 +261,24 @@
             <div class="fan-box-tip" role="status" aria-live="polite"></div>
           </div>
           <div class="fan-box-bar">
-            <p class="fan-box-hint"><span class="fan-box-dot" aria-hidden="true"></span>点一点、晃晃鼠标，和老粉丝们打个招呼</p>
-            <div class="fan-box-meta">
+            <div class="fan-box-lead">
+              <p class="fan-box-hint"><span class="fan-box-dot" aria-hidden="true"></span>点一点、晃晃鼠标，和老粉丝们打个招呼</p>
               <span class="fan-box-count" aria-live="polite"></span>
+            </div>
+            <div class="fan-box-meta">
+              <form class="fan-box-find" data-fan-box-find novalidate>
+                <input class="fan-box-find-input" type="search" name="q" placeholder="找找我" maxlength="20" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="找找我">
+                <button type="submit" class="fan-box-find-go">找</button>
+              </form>
+              <span class="fan-box-batch-idx" hidden></span>
+              <button type="button" class="fan-box-batch" hidden>换一批</button>
               <button type="button" class="fan-box-replay">
                 <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 再投一次
               </button>
             </div>
           </div>
+          <p class="fan-box-find-msg" role="status" aria-live="polite"></p>
         </div>
         <ol class="fan-timeline" data-feishu-list="fans">
           <li class="fan-card reveal">
