@@ -36,6 +36,8 @@
           <a href="index.html">首页</a>
           <a href="projects.html" aria-current="page">项目</a>
           <a href="study/">学习专注</a>
+          <a href="plan/">计划拆解</a>
+          <a href="jianzhi/">减值记录</a>
           <a href="articles.html">文章</a>
           <a href="about.html">关于</a>
           <a href="life.html">生活</a>
@@ -62,6 +64,8 @@
           <a href="index.html">首页</a>
           <a href="projects.html" aria-current="page">项目</a>
           <a href="study/">学习专注</a>
+          <a href="plan/">计划拆解</a>
+          <a href="jianzhi/">减值记录</a>
           <a href="articles.html">文章</a>
           <a href="about.html">关于</a>
           <a href="life.html">生活</a>
@@ -97,6 +101,49 @@
     </section>
     <section class="section" style="padding-top:0">
       <div class="wrap">
+        <div class="sec-head reveal" id="tools">
+          <div>
+            <p class="kicker">私人工具</p>
+            <h2>学习、计划和减值</h2>
+            <p class="desc">这三页用同一个密码保护，解锁一次就可以进出。不会被上面的项目筛选影响。</p>
+          </div>
+        </div>
+        <div class="grid-3 tool-entries" style="margin-bottom: 48px;">
+          <article class="card reveal tool-entry">
+            <div class="card-body">
+              <div class="tool-entry-head">
+                <h3>学习专注</h3>
+                <span class="entry-lock" title="进入需要密码"><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>需密码</span>
+              </div>
+              <p>在浏览器里用摄像头和 MediaPipe 识别专注或分心，并统计学习时长。画面只在本地分析，不会上传。</p>
+              <div class="card-meta"><span class="tag">工具</span><span class="tag">学习</span><span class="tag">本地</span></div>
+              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="study/">打开工具</a></div>
+            </div>
+          </article>
+          <article class="card reveal tool-entry" style="--d:.06s">
+            <div class="card-body">
+              <div class="tool-entry-head">
+                <h3>计划拆解</h3>
+                <span class="entry-lock" title="进入需要密码"><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>需密码</span>
+              </div>
+              <p>把大目标拆成可执行的步骤，看当天待办，并与飞书同步。</p>
+              <div class="card-meta"><span class="tag">工具</span><span class="tag">计划</span></div>
+              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="plan/">打开工具</a></div>
+            </div>
+          </article>
+          <article class="card reveal tool-entry" style="--d:.12s">
+            <div class="card-body">
+              <div class="tool-entry-head">
+                <h3>减值记录</h3>
+                <span class="entry-lock" title="进入需要密码"><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>需密码</span>
+              </div>
+              <p>记录体重、饮食和围度，看趋势和目标进度。档案和日记会同步到飞书，体型照片只留在本机。</p>
+              <div class="card-meta"><span class="tag">工具</span><span class="tag">健身</span></div>
+              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="jianzhi/">打开工具</a></div>
+            </div>
+          </article>
+        </div>
+
         <div class="filters reveal" data-filter-group="projects">
           <button class="chip is-active" type="button" data-filter="all">全部</button>
           <button class="chip" type="button" data-filter="tool">工具</button>
@@ -105,16 +152,6 @@
           <button class="chip" type="button" data-filter="life">生活</button>
         </div>
         <div class="grid-3" data-feishu-list="projects">
-
-
-          <article class="card reveal" data-filter-item="projects" data-cats="tool">
-            <div class="card-body">
-              <h3>学习专注</h3>
-              <p>在浏览器里用摄像头和 MediaPipe 识别专注或分心，并统计学习时长。画面只在本地分析，不会上传。</p>
-              <div class="card-meta"><span class="tag">工具</span><span class="tag">学习</span><span class="tag">本地</span></div>
-              <div class="card-foot"><a class="btn btn-ghost btn-sm" href="study/">打开工具</a></div>
-            </div>
-          </article>
 
 
           <article class="card reveal" data-filter-item="projects" data-cats="tool life">
@@ -202,6 +239,8 @@
             <li><a href="index.html">首页</a></li>
             <li><a href="projects.html">AI 项目</a></li>
             <li><a href="study/">学习专注</a></li>
+            <li><a href="plan/">计划拆解</a></li>
+            <li><a href="jianzhi/">减值记录</a></li>
             <li><a href="articles.html">文章与教程</a></li>
             <li><a href="about.html">关于我</a></li>
             <li><a href="life.html">生活与健身</a></li>

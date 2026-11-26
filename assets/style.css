@@ -2339,3 +2339,48 @@ html[data-theme="light"] .fan-box-tip .tip-from .tip-video { color: var(--gold-d
   color: var(--muted);
   letter-spacing: 0.02em;
 }
+
+
+/* 主页与导航：计划拆解 / 减值记录入口 */
+.nav-desktop a { white-space: nowrap; }
+.tool-entry-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.tool-entry-head h3 { margin: 0; }
+.entry-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--gold-ring);
+  background: rgba(232, 200, 120, 0.12);
+  color: var(--gold);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+html[data-theme="light"] .entry-lock {
+  color: var(--gold-deep, var(--gold));
+  background: rgba(201, 162, 74, 0.12);
+}
+.tool-entry .card-body { display: flex; flex-direction: column; height: 100%; }
+.tool-entry .card-foot { margin-top: auto; }
+a.tool-entry { color: inherit; text-decoration: none; }
+@media (max-width: 1120px) {
+  .nav-desktop { gap: 0; }
+  .nav-desktop a { padding: 6px 8px; font-size: 13px; }
+  .nav-desktop .nav-cta { margin-left: 6px; padding: 7px 12px; }
+}
+@media (max-width: 980px) {
+  .nav-desktop { display: none; }
+  .menu-btn { display: inline-block; }
+  .menu-theme { display: flex; }
+}
