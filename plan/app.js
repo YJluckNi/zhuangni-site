@@ -88,6 +88,26 @@
     }
   }
 
+  /* 截止日约束：给线上 Worker 的提示词补一段硬约束（Worker 新版提示词也会自带，重复无害） */
+  function deadlineExtra(start, end, extra) {
+    const days = ZNPrompts.spanDays(start, end);
+    if (!days) return extra || '';
+    const hard = '【时间硬约束，优先于其它所有规则】计划从 ' + start + ' 开始，最晚 ' + end + ' 完成，共 ' + days +
+      ' 个自然日（含首尾）。所有叶子节点按顺序首尾相接时 duration 之和必须 ≤ ' + days + '；叶子 duration 可以是 1 天；放不下就合并或减少叶子，绝不能超出期限。';
+    return (hard + (extra ? '\n' + extra : '')).slice(0, 2000);
+  }
+
+  /** 把排期结果写成一句话（AI 预览、提示条、toast 共用） */
+  function fitText(r) {
+    if (!r) return '';
+    if (r.status === 'compressed') return '已按截止日压缩：原排期 ' + r.beforeDays + ' 天 → ' + r.afterDays + ' 天（最晚 ' + fmtShort(r.lastEnd) + '）';
+    if (r.status === 'ok') return '排期 ' + r.afterDays + ' 天，在截止日内';
+    if (r.status === 'nodeadline') return '未设截止日期，按顺序排期共 ' + r.beforeDays + ' 天';
+    if (r.status === 'baddeadline') return '截止日期早于开始日期，未调整排期';
+    if (r.status === 'over') return '超出截止日 ' + r.overDays + ' 天';
+    return '';
+  }
+
   function confirmDialog(title, message, okText) {
     return new Promise((resolve) => {
       const dlg = document.createElement('dialog');
@@ -363,6 +383,39 @@
       right.appendChild(s);
     }
     bar.appendChild(right);
+
+    // 截止日检查：超期 / 未排期 → 一键修正
+    const info = WBS.scheduleInfo(S.plan);
+    if (S.plan.endDate && info.overDays > 0) {
+      const chip = el('button', 'wb-deadline over', '超出截止日 ' + info.overDays + ' 天 · 压缩到截止日');
+      chip.type = 'button';
+      chip.title = '最晚 ' + info.lastEnd + ' 结束，计划截止 ' + S.plan.endDate + '。按比例把排期压回计划区间（保持先后顺序，允许同一天多项）';
+      chip.addEventListener('click', () => fitPlanToDeadline(false));
+      bar.appendChild(chip);
+    } else if (info.unscheduled > 0 && (S.plan.startDate || S.plan.endDate)) {
+      const chip = el('button', 'wb-deadline', info.unscheduled + ' 项未排期 · 自动排期');
+      chip.type = 'button';
+      chip.title = '按工期接在已排期的后面；超出截止日时自动压缩到计划区间';
+      chip.addEventListener('click', () => fitPlanToDeadline(true));
+      bar.appendChild(chip);
+    } else if (S.plan.endDate && S.lastFit && S.lastFit.planId === S.plan.id && S.lastFit.status === 'compressed') {
+      bar.appendChild(el('span', 'wb-deadline ok', fitText(S.lastFit)));
+    }
+  }
+
+  /** 把当前计划的排期约束到「开始 ~ 截止」：fill=true 时顺便给未排期的叶子排上 */
+  function fitPlanToDeadline(fill) {
+    if (!S.plan) return;
+    const start = S.plan.startDate || Z.bjDate();
+    if (S.plan.endDate && S.plan.endDate < start) { toast('截止日期早于开始日期，请先在「属性」里改一下', 'err'); return; }
+    const r = WBS.fitSchedule(S.plan.nodes, start, S.plan.endDate, { fillMissing: !!fill, today: Z.bjDate() });
+    if (!S.plan.startDate) S.plan.startDate = start;
+    S.lastFit = Object.assign({ planId: S.plan.id }, r);
+    recompute();
+    scheduleSave();
+    renderAll();
+    const msg = r.status === 'compressed' ? fitText(r) : (r.filled ? '已排期 ' + r.filled + ' 项' + (r.status === 'ok' ? '，都在截止日内' : '') : fitText(r));
+    toast(msg || '排期已更新', 'ok');
   }
 
   function renderAll() {
@@ -875,7 +928,7 @@
       dd.style.width = dw + 'px';
       const dow = d.getUTCDay();
       if (dow === 0 || dow === 6) dd.classList.add('weekend');
-      if (WBS.fmtDate(d) === WBS.today()) dd.classList.add('today');
+      if (WBS.fmtDate(d) === Z.bjDate()) dd.classList.add('today');
       dtrack.appendChild(dd);
     }
     if (curMonth !== -1) {
@@ -938,7 +991,7 @@
     inner.appendChild(body);
 
     /* 今日线 */
-    const todayOff = WBS.dayDiff(startD, WBS.parseDate(WBS.today()));
+    const todayOff = WBS.dayDiff(startD, WBS.parseDate(Z.bjDate()));
     if (todayOff >= 0 && todayOff < days) {
       const line = el('div', 'g-today-line');
       line.style.left = (LEFT_W + todayOff * dw) + 'px';
@@ -1408,7 +1461,7 @@
   function openAiDialog() {
     if (!S.plan) return;
     $('#aiGoal').value = S.plan.goal || S.plan.title || '';
-    $('#aiStart').value = S.plan.startDate || WBS.today();
+    $('#aiStart').value = S.plan.startDate || Z.bjDate();
     $('#aiEnd').value = S.plan.endDate || '';
     $('#aiTeam').value = '';
     $('#aiExtra').value = '';
@@ -1445,20 +1498,23 @@
     setAiLoading(true);
     try {
       const startDate = $('#aiStart').value || Z.bjDate();
+      const endDate = $('#aiEnd').value;
+      if (endDate && endDate < startDate) throw new Error('截止日期早于开始日期，请先改一下日期');
       const data = await aiRequest({
         mode: 'decompose',
         goal: goal,
-        startDate: $('#aiStart').value,
-        endDate: $('#aiEnd').value,
+        startDate: startDate,
+        endDate: endDate,
         team: $('#aiTeam').value,
-        extra: $('#aiExtra').value,
+        extra: deadlineExtra(startDate, endDate, $('#aiExtra').value),
         depth: Number($('#aiDepth').value)
       });
       const nodes = convertPaths(data.nodes || []);
       if (!nodes.length) throw new Error('模型返回的工作项为空');
       scheduleDraft(nodes, startDate);
+      const fit = WBS.fitSchedule(nodes, startDate, endDate);
       const c = WBS.compute({ id: 'tmp', title: '', goal: '', nodes: nodes });
-      S.aiDraft = { title: data.title || goal.slice(0, 20), summary: data.summary || '', nodes: nodes, stats: c.stats, startDate: startDate };
+      S.aiDraft = { title: data.title || goal.slice(0, 20), summary: data.summary || '', nodes: nodes, stats: c.stats, startDate: startDate, endDate: endDate, fit: fit };
       renderAiPreview(S.aiDraft);
     } catch (e) {
       $('#aiResult').innerHTML = '<div class="ai-placeholder" style="color:var(--w-danger);line-height:1.8;padding:30px 16px;text-align:center">' +
@@ -1479,13 +1535,15 @@
       row.style.setProperty('--depth', depthOf(n) - 1);
       row.appendChild(el('span', 'code', n.code || ''));
       row.appendChild(el('span', '', n.title));
-      if (n.duration) row.appendChild(el('span', 'dur', n.duration + ' 天'));
+      if (n.duration) row.appendChild(el('span', 'dur', (n.startDate ? fmtShort(n.startDate) + (n.endDate && n.endDate !== n.startDate ? '–' + fmtShort(n.endDate) : '') + ' · ' : '') + n.duration + ' 天'));
       box.appendChild(row);
     });
 
     const st = data.stats || {};
     $('#aiSummary').textContent = (data.summary ? data.summary + '　·　' : '') +
-      '共 ' + (st.total || nodes.length) + ' 项，' + (st.maxDepth || 3) + ' 层';
+      '共 ' + (st.total || nodes.length) + ' 项，' + (st.maxDepth || 3) + ' 层' +
+      (data.fit && fitText(data.fit) ? '　·　' + fitText(data.fit) : '');
+    $('#aiSummary').classList.toggle('fit-note', !!(data.fit && data.fit.status === 'compressed'));
     $('#btnAiApply').disabled = !nodes.length;
   }
 
@@ -1497,6 +1555,7 @@
     }
     S.plan.nodes = S.aiDraft.nodes;
     if (S.aiDraft.startDate) S.plan.startDate = S.aiDraft.startDate;
+    if (S.aiDraft.endDate) S.plan.endDate = S.aiDraft.endDate;
     if (!S.plan.title || S.plan.title === '未命名计划') S.plan.title = S.aiDraft.title || S.plan.title;
     WBS.normalizeOrder(S.plan.nodes);
     S.selId = null;
@@ -1505,7 +1564,8 @@
     scheduleSave();
     renderAll();
     $('#dlgAi').close();
-    toast('已采用 AI 拆解结果', 'ok');
+    const ft = S.aiDraft.fit && S.aiDraft.fit.status === 'compressed' ? '（' + fitText(S.aiDraft.fit) + '）' : '';
+    toast('已采用 AI 拆解结果' + ft, 'ok');
   }
 
   async function aiExpand(node) {
@@ -1516,16 +1576,22 @@
     try {
       const c0 = WBS.compute(S.plan);
       const cur = c0.byId[node.id] || node;
+      // 子项可用的时间窗：本项原有的起止（不超过计划截止日），否则用计划区间
+      const winStart = cur.startDate || S.plan.startDate || Z.bjDate();
+      let winEnd = cur.endDate && cur.endDate >= winStart ? cur.endDate : (S.plan.endDate || '');
+      if (S.plan.endDate && winEnd && winEnd > S.plan.endDate) winEnd = S.plan.endDate;
+      const windowDays = ZNPrompts.spanDays(winStart, winEnd);
       const data = await aiRequest({
         mode: 'expand',
         planTitle: S.plan.title,
         goal: S.plan.goal,
         nodeTitle: cur.title,
         nodeCode: cur.code,
-        nodeDeliverable: cur.deliverable
+        nodeDeliverable: (cur.deliverable || '') + (windowDays ? '（该项最多 ' + windowDays + ' 个自然日，子项工期之和不得超过 ' + windowDays + ' 天，可以是 1 天）' : ''),
+        windowDays: windowDays
       });
       const kids = S.plan.nodes.filter((x) => x.parentId === node.id).length;
-      let cursor = cur.startDate || S.plan.startDate || Z.bjDate();
+      let cursor = winStart;
       const list = (data.nodes || []).map((item, i) => {
         const d = Math.max(1, Math.min(60, Number(item.duration) || 3));
         const n = WBS.normalizeNode({
@@ -1537,6 +1603,7 @@
         return n;
       });
       if (!list.length) throw new Error('模型没有返回子项');
+      const fit = WBS.fitSchedule(list, winStart, winEnd);
       list.forEach((n) => S.plan.nodes.push(n));
       WBS.normalizeOrder(S.plan.nodes);
       S.expanded.add(node.id);
@@ -1545,7 +1612,7 @@
       renderStage();
       renderInspector();
       renderMeta();
-      toast('已追加 ' + list.length + ' 个子项', 'ok');
+      toast('已追加 ' + list.length + ' 个子项' + (fit.status === 'compressed' ? '（' + fitText(fit) + '）' : ''), 'ok');
     } catch (e) {
       toast('展开失败：' + e.message, 'err');
     }
@@ -1618,7 +1685,7 @@
   }
 
   function scheduleDraft(nodes, startDate) {
-    let cursor = startDate || WBS.today();
+    let cursor = startDate || Z.bjDate();
     const kidsOf = {};
     nodes.forEach((n) => { (kidsOf[n.parentId || ''] = kidsOf[n.parentId || ''] || []).push(n); });
     Object.keys(kidsOf).forEach((k) => kidsOf[k].sort((a, b) => a.order - b.order));
@@ -1789,7 +1856,7 @@
   function openPlanDialog() {
     const form = $('#formPlan');
     form.reset();
-    form.elements.startDate.value = WBS.today();
+    form.elements.startDate.value = Z.bjDate();
     form.elements.withAi.checked = true;
     $('#dlgPlan').showModal();
     setTimeout(() => form.elements.title.focus(), 60);
@@ -1864,7 +1931,9 @@
     $('#btnPasteParse').addEventListener('click', () => {
       try {
         const nodes = parseDraft($('#pasteBox').value);
-        scheduleDraft(nodes, $('#aiStart').value || WBS.today());
+        const pStart = $('#aiStart').value || Z.bjDate();
+        scheduleDraft(nodes, pStart);
+        const fit = WBS.fitSchedule(nodes, pStart, $('#aiEnd').value);
         const tmp = { id: 'tmp', title: '导入', goal: '', nodes: nodes };
         const c = WBS.compute(tmp);
         S.aiDraft = {
@@ -1872,7 +1941,9 @@
           summary: '从粘贴内容解析',
           nodes: nodes,
           stats: c.stats,
-          startDate: $('#aiStart').value || WBS.today()
+          startDate: pStart,
+          endDate: $('#aiEnd').value,
+          fit: fit
         };
         renderAiPreview(S.aiDraft);
         $('#dlgPaste').close();
@@ -2174,8 +2245,9 @@
     pill.dataset.state = st.status;
     let text = map[st.status] || st.status;
     if (st.status === 'synced' && st.lastSync) {
-      const d = new Date(st.lastSync);
-      text += ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+      // 统一按北京时间显示，与「今天」的划分一致
+      const t = Date.parse(st.lastSync);
+      if (!isNaN(t)) text += ' ' + new Date(t + 8 * 3600000).toISOString().slice(11, 16);
     }
     pill.querySelector('span').textContent = text;
     pill.title = (st.message || '') + '（点一下立即同步）';

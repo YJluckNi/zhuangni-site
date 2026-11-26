@@ -277,7 +277,152 @@
 
     if (!c.nodes.length) issues.push({ nodeId: null, code: '', level: 'warn', text: '计划还没有任何工作项' });
 
+    // 排期是否超出计划截止日
+    var info = scheduleInfo(plan);
+    if (info.overDays > 0) {
+      issues.unshift({ nodeId: info.lastLeafId, code: info.lastLeafCode || '', level: 'warn',
+        text: '整体排期超出截止日 ' + info.overDays + ' 天：最晚 ' + info.lastEnd + ' 结束，截止 ' + plan.endDate +
+          '。可点顶部「压缩到截止日」按比例压回计划区间' });
+    }
+    if (info.unscheduled > 0 && c.nodes.length) {
+      issues.push({ nodeId: null, code: '', level: 'info', text: '有 ' + info.unscheduled + ' 个工作包还没排期，可点顶部「自动排期」按截止日排好' });
+    }
+
     return { issues: issues, stats: c.stats };
+  }
+
+  /* ---------- 截止日约束排期 ---------- */
+
+  /** 叶子节点（按树的先后顺序）。nodes 可以是子集：父级不在集合里的节点视为根 */
+  function leafOrder(nodes) {
+    var ids = {}, kids = {};
+    nodes.forEach(function (n) { ids[n.id] = 1; });
+    nodes.forEach(function (n) {
+      var k = n.parentId && ids[n.parentId] ? n.parentId : '';
+      (kids[k] = kids[k] || []).push(n);
+    });
+    Object.keys(kids).forEach(function (k) { kids[k].sort(function (a, b) { return (a.order || 0) - (b.order || 0); }); });
+    var out = [];
+    (function walk(pid) {
+      (kids[pid] || []).forEach(function (n) {
+        if ((kids[n.id] || []).length) walk(n.id); else out.push(n);
+      });
+    })('');
+    return { leaves: out, kids: kids };
+  }
+
+  /** 父节点日期 / 工期 = 子项汇总（就地修改） */
+  function rollupDates(nodes) {
+    var lo = leafOrder(nodes), kids = lo.kids;
+    (function up(pid) {
+      var s = null, e = null;
+      (kids[pid] || []).forEach(function (n) {
+        var r = (kids[n.id] || []).length ? up(n.id) : { s: parseDate(n.startDate), e: parseDate(n.endDate) };
+        if ((kids[n.id] || []).length && r.s && r.e) {
+          n.startDate = fmtDate(r.s); n.endDate = fmtDate(r.e); n.duration = dayDiff(r.s, r.e) + 1;
+        }
+        if (r.s && (!s || r.s < s)) s = r.s;
+        if (r.e && (!e || r.e > e)) e = r.e;
+      });
+      return { s: s, e: e };
+    })('');
+  }
+
+  /** 当前排期与截止日的关系：最晚结束、超出天数、未排期叶子数 */
+  function scheduleInfo(plan) {
+    var lo = leafOrder(plan.nodes || []);
+    var last = null, lastLeaf = null, unscheduled = 0, first = null;
+    lo.leaves.forEach(function (n) {
+      var s = parseDate(n.startDate), e = parseDate(n.endDate);
+      if (!s || !e) { unscheduled++; return; }
+      if (!last || e > last) { last = e; lastLeaf = n; }
+      if (!first || s < first) first = s;
+    });
+    var end = parseDate(plan.endDate), start = parseDate(plan.startDate) || first;
+    var codeOf = '';
+    if (lastLeaf) { var c = compute(plan); codeOf = c.byId[lastLeaf.id] ? c.byId[lastLeaf.id].code : ''; }
+    return {
+      lastEnd: last ? fmtDate(last) : '',
+      lastLeafId: lastLeaf ? lastLeaf.id : null,
+      lastLeafCode: codeOf,
+      spanDays: first && last ? dayDiff(start && start < first ? start : first, last) + 1 : 0,
+      windowDays: start && end && end >= start ? dayDiff(start, end) + 1 : 0,
+      overDays: last && end && last > end ? dayDiff(end, last) : 0,
+      unscheduled: unscheduled
+    };
+  }
+
+  /**
+   * 把叶子排期约束到 [startDate, endDate]（含首尾，自然日）。
+   * - fillMissing：没有日期的叶子按工期接在已排期的后面（没有已排期的就从开始日起串行）
+   * - 超出截止日时按比例压缩：保持先后顺序（前一项结束 ≤ 后一项开始），允许并行 / 同一天多项，每项至少 1 天
+   * 就地修改 nodes（叶子和父级的 startDate / endDate / duration），返回说明。
+   */
+  function fitSchedule(nodes, startDate, endDate, opts) {
+    opts = opts || {};
+    var lo = leafOrder(nodes);
+    var leaves = lo.leaves;
+    var start = parseDate(startDate);
+    var filled = 0;
+    if (opts.fillMissing) {
+      var cursor = null;
+      leaves.forEach(function (n) {
+        var s = parseDate(n.startDate), e = parseDate(n.endDate);
+        if (s && e && (!cursor || e >= cursor)) cursor = new Date(e.getTime() + DAY);
+      });
+      if (!cursor) cursor = start || parseDate(opts.today || today());
+      leaves.forEach(function (n) {
+        if (parseDate(n.startDate) && parseDate(n.endDate)) return;
+        var d = Math.max(1, Math.round(num(n.duration, 1)) || 1);
+        n.startDate = fmtDate(cursor);
+        n.endDate = fmtDate(new Date(cursor.getTime() + (d - 1) * DAY));
+        n.duration = d;
+        cursor = new Date(cursor.getTime() + d * DAY);
+        filled++;
+      });
+    }
+    var dated = leaves.filter(function (n) { return parseDate(n.startDate) && parseDate(n.endDate); });
+    var res = { status: 'empty', filled: filled, beforeDays: 0, afterDays: 0, overDays: 0, lastEnd: '' };
+    if (!dated.length) { rollupDates(nodes); return res; }
+    var minS = null, maxE = null;
+    dated.forEach(function (n) {
+      var s = parseDate(n.startDate), e = parseDate(n.endDate);
+      if (e < s) { n.endDate = n.startDate; e = s; }
+      if (!minS || s < minS) minS = s;
+      if (!maxE || e > maxE) maxE = e;
+    });
+    if (!start) start = minS;
+    var origin = minS < start ? minS : start;
+    res.beforeDays = dayDiff(origin, maxE) + 1;
+    res.lastEnd = fmtDate(maxE);
+    var end = parseDate(endDate);
+    if (!end) { res.status = 'nodeadline'; res.afterDays = res.beforeDays; rollupDates(nodes); return res; }
+    if (end < start) { res.status = 'baddeadline'; rollupDates(nodes); return res; }
+    var W = dayDiff(start, end) + 1;
+    res.windowDays = W;
+    if (maxE <= end) { res.status = 'ok'; res.afterDays = res.beforeDays; rollupDates(nodes); return res; }
+    if (opts.compress === false) { res.status = 'over'; res.overDays = dayDiff(end, maxE); rollupDates(nodes); return res; }
+    var T = res.beforeDays;
+    var f = W / T;
+    var eps = 1e-9;
+    var newMax = null;
+    dated.forEach(function (n) {
+      var s = dayDiff(origin, parseDate(n.startDate));
+      var e = dayDiff(origin, parseDate(n.endDate)) + 1;
+      var ns = Math.floor(s * f + eps);
+      var ne = Math.max(ns, Math.ceil(e * f - eps) - 1);
+      if (ne > W - 1) ne = W - 1;
+      if (ns > ne) ns = ne;
+      n.startDate = fmtDate(new Date(start.getTime() + ns * DAY));
+      n.endDate = fmtDate(new Date(start.getTime() + ne * DAY));
+      n.duration = ne - ns + 1;
+      if (newMax === null || ne > newMax) newMax = ne;
+    });
+    rollupDates(nodes);
+    res.status = 'compressed';
+    res.afterDays = newMax + 1;
+    res.lastEnd = fmtDate(new Date(start.getTime() + newMax * DAY));
+    return res;
   }
 
   /* ---------- 结构操作 ---------- */
@@ -449,6 +594,10 @@
     cloneSubtree: cloneSubtree,
     siblings: siblings,
     dateSpan: dateSpan,
+    leafOrder: leafOrder,
+    rollupDates: rollupDates,
+    scheduleInfo: scheduleInfo,
+    fitSchedule: fitSchedule,
     shiftPlan: shiftPlan,
     STATUS_TEXT: STATUS_TEXT
   };

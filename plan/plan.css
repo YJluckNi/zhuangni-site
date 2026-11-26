@@ -1618,3 +1618,28 @@ body.mode-today .inspector { display: none; }
 /* 按钮与分段控件不折行 */
 .tb-right > *, .seg button { flex: none; white-space: nowrap; }
 .seg button { min-width: max-content; }
+
+/* 截止日提示 */
+.wb-deadline {
+  margin-left: 12px;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--w-accent-line);
+  background: var(--w-accent-soft);
+  color: var(--w-accent);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.wb-deadline:hover { filter: brightness(1.06); }
+.wb-deadline.over { border-color: var(--w-danger); background: var(--w-danger-soft); color: var(--w-danger); }
+span.wb-deadline.ok { cursor: default; border-color: transparent; background: transparent; font-weight: 500; }
+#aiSummary.fit-note { color: var(--w-accent); }
+@media (max-width: 640px) { .wb-deadline { margin-left: 0; } }
+.meta-bar { flex-wrap: wrap; row-gap: 6px; }
+.meta-bar .wb-deadline { flex: none; }
+@media (max-width: 640px) { .meta-bar { flex-wrap: nowrap; } }
