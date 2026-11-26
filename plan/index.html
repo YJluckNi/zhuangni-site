@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>计划拆解 · 壮尼Ni</title>
+<meta name="theme-color" content="#080809">
+<link rel="icon" type="image/png" href="../assets/favicon.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="./plan.css">
+<script>
+(function(){
+  var t="dark";
+  try {
+    var s=localStorage.getItem("zn-theme");
+    if(s==="light"||s==="dark") t=s;
+    else if(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches) t="light";
+  } catch(e) {}
+  document.documentElement.setAttribute("data-theme", t);
+  document.documentElement.classList.add("js");
+  var m=document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute("content", t==="light" ? "#f4efe6" : "#080809");
+})();
+</script>
+<style id="zn-gate-boot">html:not(.zn-gate-unlocked) #app{display:none!important}</style>
+<!-- 只为拿到同一个 Worker 地址（window.ZN_FEISHU_ENDPOINT）；本页没有公开同步板块 -->
+<script src="../assets/feishu-sync.js"></script>
+<!-- 公共密码门：与学习专注页同一个密码、解锁一次两页都通；解锁前不加载下面的应用脚本 -->
+<script src="../assets/gate.js" data-root="#app" data-title="计划拆解" data-lead="这是壮尼的私人计划工具，请输入密码进入。" data-exit="#btnExit"></script>
+<script type="zn-app" data-type="classic" src="./wbs.js"></script>
+<script type="zn-app" data-type="classic" src="./xlsx.js"></script>
+<script type="zn-app" data-type="classic" src="./prompts.js"></script>
+<script type="zn-app" data-type="classic" src="../assets/plan-core.js"></script>
+<script type="zn-app" data-type="classic" src="./app.js"></script>
+</head>
+<body class="wbs-page">
+
+<header class="site-header is-scrolled wb-header">
+  <div class="wb-header-in">
+    <a class="brand" href="../index.html">
+      <img src="../assets/img/avatar.webp" width="30" height="30" alt="">
+      壮尼<span class="ni">Ni</span>
+    </a>
+    <span class="wb-crumb" aria-current="page">计划拆解</span>
+    <div class="wb-header-tools">
+      <nav class="wb-links" aria-label="私人工具">
+        <a href="../study/">学习专注</a>
+        <a href="../index.html">回到首页</a>
+      </nav>
+      <button class="wb-sync" id="syncPill" type="button" data-state="idle" title="点一下立即同步"><i></i><span>未同步</span></button>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换为浅色外观" aria-pressed="false">
+        <span class="theme-toggle-icon icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v1.6M12 19.4V21M4.5 4.5l1.1 1.1M18.4 18.4l1.1 1.1M3 12h1.6M19.4 12H21M4.5 19.5l1.1-1.1M18.4 5.6l1.1-1.1"/></svg></span>
+        <span class="theme-toggle-icon icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A7.5 7.5 0 0 1 9.5 4 7.5 7.5 0 1 0 20 14.5z"/></svg></span>
+      </button>
+      <button class="wb-exit" id="btnExit" type="button" hidden title="退出并清除这台设备的解锁状态">退出</button>
+    </div>
+  </div>
+</header>
+
+<div class="app" id="app">
+
+  <!-- 左：今日待办 + 计划列表 -->
+  <aside class="rail" id="rail">
+    <div class="rail-head">
+      <div class="wb-brand">
+        <span class="brand-mark">W</span>
+        <div class="brand-text">
+          <b>计划拆解</b>
+          <small>WBS 工作分解 · 今日待办</small>
+        </div>
+      </div>
+      <button class="icon-btn" id="btnNewPlan" title="新建计划" aria-label="新建计划">＋</button>
+    </div>
+
+    <div class="rail-search">
+      <input id="planSearch" type="search" placeholder="搜索计划名称 / 目标" autocomplete="off">
+    </div>
+
+    <div class="rail-list" id="planList"></div>
+
+    <div class="rail-foot">
+      <button class="ghost-btn" id="btnImport" title="导入计划 JSON 或备份文件（换设备 / 恢复）">导入 JSON</button>
+      <button class="ghost-btn" id="btnBackup" title="把全部计划和待办导出成一个 JSON 备份">备份全部</button>
+    </div>
+  </aside>
+  <div class="rail-scrim" id="railScrim"></div>
+
+  <!-- 中：工作区 -->
+  <main class="main">
+    <header class="topbar">
+      <div class="tb-left">
+        <button class="icon-btn wb-rail-btn" id="btnRail" type="button" aria-label="今日待办与计划列表">☰</button>
+        <div class="plan-head">
+          <h1 id="planTitle" spellcheck="false">今日待办</h1>
+          <p class="plan-goal" id="planGoal"></p>
+        </div>
+      </div>
+      <div class="tb-right">
+        <div class="seg" id="viewSeg">
+          <button data-view="tree" class="on">树状</button>
+          <button data-view="table">词典表</button>
+          <button data-view="gantt">甘特</button>
+        </div>
+        <button class="wb-btn accent" id="btnAi">AI 拆解</button>
+        <button class="wb-btn" id="btnAddRoot">＋ 一级工作项</button>
+        <button class="wb-btn" id="btnIsp" title="显示 / 隐藏属性面板">属性</button>
+        <div class="menu-wrap">
+          <button class="wb-btn" id="btnExport">导出 ▾</button>
+          <div class="menu" id="exportMenu">
+            <button data-act="xlsx">导出 Excel（WBS 词典）</button>
+            <button data-act="json">导出 JSON（含结构）</button>
+            <button data-act="print">打印 / 存为 PDF</button>
+            <button data-act="copyjson">复制完整数据到剪贴板</button>
+            <button data-act="backup">备份全部计划（JSON）</button>
+            <button data-act="import">导入 JSON…</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="meta-bar" id="metaBar"></div>
+
+    <section class="stage" id="stage"></section>
+  </main>
+
+  <!-- 右：属性面板 -->
+  <aside class="inspector" id="inspector"></aside>
+
+</div>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<div class="toasts" id="toasts"></div>
+<div class="save-state" id="saveState"></div>
+
+<!-- 新建计划 -->
+<dialog id="dlgPlan" class="dlg">
+  <form method="dialog" id="formPlan">
+    <div class="dlg-head">
+      <h3>新建计划</h3>
+      <p>一个目标对应一个计划，计划内部按 WBS 逐层拆解。</p>
+    </div>
+    <div class="dlg-body">
+      <label class="field">
+        <span>计划名称</span>
+        <input name="title" required maxlength="60" placeholder="例：个人网站改版">
+      </label>
+      <label class="field">
+        <span>目标描述 <i>越具体，拆解越准</i></span>
+        <textarea name="goal" rows="4" placeholder="例：三个月内把个人网站从纯博客升级为作品集 + 博客 + 联系页，支持移动端，月访问量目标 5000。"></textarea>
+      </label>
+      <div class="row2">
+        <label class="field">
+          <span>开始日期</span>
+          <input name="startDate" type="date">
+        </label>
+        <label class="field">
+          <span>目标完成日期</span>
+          <input name="endDate" type="date">
+        </label>
+      </div>
+      <label class="field">
+        <span>负责人</span>
+        <input name="owner" maxlength="20" placeholder="选填">
+      </label>
+      <label class="check">
+        <input type="checkbox" name="withAi" checked>
+        <span>创建后立即用 AI 拆解</span>
+      </label>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="wb-btn ghost" data-close>取消</button>
+      <button type="submit" class="wb-btn accent">创建计划</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- AI 拆解 -->
+<dialog id="dlgAi" class="dlg wide">
+  <div class="dlg-head">
+    <h3>AI 拆解目标</h3>
+    <p>按 WBS 的三层结构生成初稿，生成后可以自由增删改。</p>
+  </div>
+  <div class="dlg-body ai-body">
+    <div class="ai-form">
+      <label class="field">
+        <span>目标</span>
+        <textarea id="aiGoal" rows="4" placeholder="要拆解的目标"></textarea>
+      </label>
+      <div class="row2">
+        <label class="field">
+          <span>开始日期</span>
+          <input id="aiStart" type="date">
+        </label>
+        <label class="field">
+          <span>截止日期</span>
+          <input id="aiEnd" type="date">
+        </label>
+      </div>
+      <div class="row2">
+        <label class="field">
+          <span>拆解层级</span>
+          <select id="aiDepth">
+            <option value="2">两层（阶段 + 工作包）</option>
+            <option value="3" selected>三层（阶段 + 工作包 + 活动）</option>
+            <option value="4">四层（细到执行步骤）</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>执行角色</span>
+          <input id="aiTeam" placeholder="例：我一个人 / 前端+设计两人">
+        </label>
+      </div>
+      <label class="field">
+        <span>额外约束</span>
+        <textarea id="aiExtra" rows="3" placeholder="例：预算 2 万以内；必须先上线博客再改作品集；每周只有 10 小时"></textarea>
+      </label>
+      <div class="ai-actions">
+        <button class="wb-btn accent" id="btnAiRun">开始拆解</button>
+        <button class="wb-btn" id="btnAiPrompt">复制提示词</button>
+        <button class="wb-btn" id="btnAiPaste">粘贴结果</button>
+      </div>
+      <p class="wb-hint" id="aiHint">AI 拆解走私人中转；连不上时，用「复制提示词」把要求发给任意 AI，再把返回的 JSON 粘贴回来即可。</p>
+    </div>
+
+    <div class="ai-result" id="aiResult">
+      <div class="ai-placeholder">拆解结果会显示在这里</div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <span class="grow" id="aiSummary"></span>
+    <button type="button" class="wb-btn ghost" data-close>关闭</button>
+    <button type="button" class="wb-btn accent" id="btnAiApply" disabled>采用此结构</button>
+  </div>
+</dialog>
+
+<!-- 手动粘贴 -->
+<dialog id="dlgPaste" class="dlg">
+  <div class="dlg-head">
+    <h3>粘贴 AI 返回的 JSON</h3>
+    <p>支持 {"nodes":[...]} 或 {"data":{"nodes":[...]}}，也可以直接粘贴计划 JSON。</p>
+  </div>
+  <div class="dlg-body">
+    <textarea id="pasteBox" rows="14" class="mono" placeholder='{"title":"...","nodes":[{"path":"1","title":"..."}]}'></textarea>
+  </div>
+  <div class="dlg-foot">
+    <button type="button" class="wb-btn ghost" data-close>取消</button>
+    <button type="button" class="wb-btn accent" id="btnPasteParse">解析</button>
+  </div>
+</dialog>
+
+<!-- 检查结果 -->
+<dialog id="dlgCheck" class="dlg">
+  <div class="dlg-head">
+    <h3>分解检查</h3>
+    <p>基于 WBS 的 100% 原则与可交付性检查，仅作提示，不阻断编辑。</p>
+  </div>
+  <div class="dlg-body" id="checkBody"></div>
+  <div class="dlg-foot">
+    <button type="button" class="wb-btn ghost" data-close>关闭</button>
+  </div>
+</dialog>
+
+
+<script src="../assets/main.js"></script>
+</body>
+</html>

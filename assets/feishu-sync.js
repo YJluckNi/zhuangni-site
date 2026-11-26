@@ -28,6 +28,7 @@
     return String(ep || "").replace(/\/+$/, "");
   }
   var ENDPOINT = isFile ? "" : resolveEndpoint();
+  window.ZN_FEISHU_ENDPOINT = ENDPOINT; // 给计划拆解 / 学习页联动共用同一个 Worker 地址
   root.setAttribute("data-feishu", ENDPOINT ? "pending" : "off");
 
   /* ---------- 小工具 ---------- */
