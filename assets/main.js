@@ -153,6 +153,22 @@
   /* 词云：螺旋碰撞布局，数据来自页面内 ZN_CLOUD_WORDS（配置飞书后由 feishu-sync.js 更新） */
   let cloudLayout = null;
   let cloudResizeBound = false;
+  let cloudBtnBound = false;
+  let cloudAnimToken = 0;
+  let cloudFloatTimer = 0;
+  let cloudIO = null;
+
+  function shuffleIndex(n) {
+    const order = Array.from({ length: n }, (_, i) => i);
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = order[i];
+      order[i] = order[j];
+      order[j] = t;
+    }
+    return order;
+  }
+
   function initWordCloud() {
     const canvas = document.getElementById("word-cloud");
     const rankBox = document.getElementById("cloud-rank");
@@ -197,7 +213,77 @@
       return !(a.x + a.w + pad < b.x || b.x + b.w + pad < a.x || a.y + a.h + pad < b.y || b.y + b.h + pad < a.y);
     }
 
-    function layout() {
+    function playEntrance(placed, opts) {
+      const cloudBtn = document.getElementById("cloud-refresh");
+      const token = ++cloudAnimToken;
+      window.clearTimeout(cloudFloatTimer);
+      if (cloudIO) { cloudIO.disconnect(); cloudIO = null; }
+      canvas.classList.remove("is-ready", "is-settled");
+      placed.forEach((p) => p.el.classList.remove("is-floating"));
+      if (cloudBtn) {
+        cloudBtn.classList.remove("is-spinning");
+        cloudBtn.removeAttribute("aria-busy");
+      }
+
+      const instant = !!(opts && opts.instant);
+      const start = () => {
+        if (token !== cloudAnimToken) return;
+        void canvas.offsetWidth;
+        if (instant && !reduce) {
+          canvas.classList.add("is-settled");
+          placed.forEach((p) => p.el.classList.add("is-floating"));
+          return;
+        }
+        if (!reduce && cloudBtn) {
+          cloudBtn.classList.add("is-spinning");
+          cloudBtn.setAttribute("aria-busy", "true");
+        }
+        canvas.classList.add("is-ready");
+        if (reduce) {
+          if (cloudBtn) cloudBtn.removeAttribute("aria-busy");
+          return;
+        }
+        const delays = placed.map((p) => {
+          const d = parseFloat(p.el.style.getPropertyValue("--delay"));
+          return Number.isFinite(d) ? d : 0;
+        });
+        const coreExtra = placed.some((p) => p.el.classList.contains("is-core")) ? 160 : 0;
+        const wait = Math.max(0, ...delays) * 1000 + 920 + coreExtra;
+        cloudFloatTimer = window.setTimeout(() => {
+          if (token !== cloudAnimToken) return;
+          placed.forEach((p) => p.el.classList.add("is-floating"));
+          if (cloudBtn) {
+            cloudBtn.classList.remove("is-spinning");
+            cloudBtn.removeAttribute("aria-busy");
+          }
+        }, wait);
+      };
+
+      if (instant || reduce) {
+        start();
+        return;
+      }
+
+      const board = canvas.closest(".cloud-board") || canvas;
+      const waitForView = !opts || opts.waitForView !== false;
+      if (!waitForView || board.classList.contains("is-in") || !document.documentElement.classList.contains("js")) {
+        requestAnimationFrame(start);
+      } else if ("IntersectionObserver" in window) {
+        cloudIO = new IntersectionObserver((entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              start();
+              if (cloudIO) { cloudIO.disconnect(); cloudIO = null; }
+            }
+          });
+        }, { threshold: 0.2 });
+        cloudIO.observe(board);
+      } else {
+        start();
+      }
+    }
+
+    function layout(opts) {
       const width = canvas.clientWidth || 640;
       const height = canvas.clientHeight || 520;
       canvas.replaceChildren();
@@ -273,9 +359,14 @@
         el.style.fontSize = fs.size + "px";
         el.style.fontWeight = String(fs.weight);
         el.style.setProperty("--o", String(fs.op));
-        el.style.setProperty("--delay", (index * 0.045) + "s");
         el.style.setProperty("--drift", (index % 7) * 0.35 + "s");
         el.style.setProperty("--amp", (tier === "core" ? -2 : tier === "lg" ? -4 : -5) + "px");
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        el.style.setProperty("--from-x", Math.round(-cx * 0.62) + "px");
+        el.style.setProperty("--from-y", Math.round(-cy * 0.62) + "px");
+        const spin = (index % 2 === 0 ? 1 : -1) * (tier === "core" ? 8 : 10 + (index % 6) * 3);
+        el.style.setProperty("--spin", spin + "deg");
         const inner = document.createElement("span");
         inner.className = "cloud-word-inner";
         inner.textContent = item.word;
@@ -285,6 +376,15 @@
         placed.push({ x, y, w, h, el });
       });
       measurer.remove();
+
+      const n = placed.length;
+      const order = (opts && opts.shuffle) ? shuffleIndex(n) : Array.from({ length: n }, (_, i) => i);
+      order.forEach((orig, appear) => {
+        const delay = (opts && opts.shuffle)
+          ? appear * 0.055
+          : (appear < 5 ? appear * 0.09 : 0.45 + (appear - 5) * 0.052);
+        placed[orig].el.style.setProperty("--delay", delay.toFixed(3) + "s");
+      });
 
       let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
       placed.forEach((p) => {
@@ -299,42 +399,29 @@
       const scale = Math.min((width - pad) / bw, (height - pad) / bh, 1);
       world.style.transform = "translate(-50%, -50%) scale(" + scale.toFixed(4) + ")";
 
-      const board = canvas.closest(".cloud-board") || canvas;
-      const start = () => {
-        canvas.classList.add("is-ready");
-        if (!reduce) {
-          window.setTimeout(() => {
-            placed.forEach((p) => p.el.classList.add("is-floating"));
-          }, 750 + sorted.length * 45);
-        }
-      };
-      if (reduce) {
-        canvas.classList.add("is-ready");
-      } else if (board.classList.contains("is-in") || !document.documentElement.classList.contains("js")) {
-        requestAnimationFrame(start);
-      } else if ("IntersectionObserver" in window) {
-        const io = new IntersectionObserver((entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              start();
-              io.disconnect();
-            }
-          });
-        }, { threshold: 0.2 });
-        io.observe(board);
-      } else {
-        start();
-      }
+      playEntrance(placed, {
+        instant: !!(opts && opts.instant),
+        waitForView: !opts || opts.waitForView !== false
+      });
     }
 
-    layout();
+    layout({ waitForView: true });
     cloudLayout = layout;
+    if (!cloudBtnBound) {
+      cloudBtnBound = true;
+      const cloudBtn = document.getElementById("cloud-refresh");
+      if (cloudBtn) {
+        cloudBtn.addEventListener("click", () => {
+          if (cloudLayout) cloudLayout({ shuffle: true, waitForView: false, instant: false });
+        });
+      }
+    }
     if (!cloudResizeBound) {
       cloudResizeBound = true;
       let timer = 0;
       window.addEventListener("resize", () => {
         window.clearTimeout(timer);
-        timer = window.setTimeout(() => { if (cloudLayout) cloudLayout(); }, 180);
+        timer = window.setTimeout(() => { if (cloudLayout) cloudLayout({ instant: true }); }, 180);
       });
     }
   }

@@ -1190,8 +1190,6 @@ html[data-theme="light"] .masonry figcaption {
   .card::after { display: none; }
   .word-cloud .cloud-word,
   .word-cloud.is-in .cloud-word,
-  .cloud-canvas .cloud-word,
-  .cloud-canvas.is-ready .cloud-word,
   .cloud-word-inner,
   .fan-card,
   .cloud-rank .bar-fill {
@@ -1199,6 +1197,30 @@ html[data-theme="light"] .masonry figcaption {
     opacity: 1;
     transform: none;
     transition: none !important;
+    filter: none;
+  }
+  .js .cloud-canvas .cloud-word {
+    opacity: 0;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+  }
+  .js .cloud-canvas.is-ready .cloud-word {
+    animation: cloud-fade 0.4s ease both !important;
+    animation-delay: 0s !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  .js .cloud-canvas.is-settled .cloud-word {
+    animation: none !important;
+    opacity: var(--o, 1) !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .cloud-refresh-icon,
+  .cloud-refresh.is-spinning .cloud-refresh-icon {
+    animation: none !important;
   }
   .cloud-word:hover,
   .cloud-word:focus-visible,
@@ -1209,6 +1231,24 @@ html[data-theme="light"] .masonry figcaption {
 
 /* ---- 词云 ---- */
 .cloud-section .sec-head { margin-bottom: 22px; }
+.cloud-refresh {
+  flex-shrink: 0;
+  align-self: flex-end;
+  margin-bottom: 2px;
+}
+.cloud-refresh-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
+  flex-shrink: 0;
+  transform-origin: 50% 54%;
+}
+.cloud-refresh.is-spinning .cloud-refresh-icon {
+  animation: cloud-refresh-spin 0.65s linear infinite;
+}
+@keyframes cloud-refresh-spin {
+  to { transform: rotate(360deg); }
+}
 .cloud-board {
   display: grid;
   grid-template-columns: 1fr 220px;
@@ -1282,20 +1322,54 @@ html[data-theme="light"] .masonry figcaption {
   transform-origin: center;
   transition: transform 0.35s var(--ease), filter 0.35s var(--ease);
 }
+.cloud-word { --end-filter: none; }
+.cloud-word.is-core { --end-filter: drop-shadow(0 0 18px var(--cloud-core-glow)); }
 .js .cloud-word {
   opacity: 0;
-  transform: scale(0.72);
+  transform: translate(var(--from-x, 0px), var(--from-y, 0px)) scale(0.28) rotate(var(--spin, 0deg));
+  filter: blur(12px);
 }
 .js .cloud-canvas.is-ready .cloud-word {
-  animation: cloud-pop 0.7s var(--ease) forwards;
+  animation: cloud-enter 0.92s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: var(--delay, 0s);
+}
+.js .cloud-canvas.is-ready .cloud-word.is-core {
+  animation-duration: 1.08s;
+}
+.js .cloud-canvas.is-settled .cloud-word {
+  animation: none;
+  opacity: var(--o, 1);
+  transform: none;
+  filter: var(--end-filter, none);
 }
 .js .cloud-canvas.is-ready .cloud-word.is-floating .cloud-word-inner {
   animation: cloud-breathe 5.4s ease-in-out var(--drift, 0s) infinite;
 }
-@keyframes cloud-pop {
-  0% { opacity: 0; transform: scale(0.72) translateY(8px); }
-  100% { opacity: var(--o, 1); transform: scale(1) translateY(0); }
+@keyframes cloud-enter {
+  0% {
+    opacity: 0;
+    transform: translate(var(--from-x, 0px), var(--from-y, 0px)) scale(0.28) rotate(var(--spin, 12deg));
+    filter: blur(12px) drop-shadow(0 0 0 transparent);
+  }
+  58% {
+    opacity: var(--o, 1);
+    transform: translate(0, 0) scale(1.16) rotate(calc(var(--spin, 12deg) * 0.12));
+    filter: blur(0) drop-shadow(0 0 22px var(--cloud-core-glow));
+  }
+  78% {
+    opacity: var(--o, 1);
+    transform: translate(0, 0) scale(0.97) rotate(0deg);
+    filter: blur(0) drop-shadow(0 0 12px var(--cloud-core-glow));
+  }
+  100% {
+    opacity: var(--o, 1);
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    filter: var(--end-filter, none);
+  }
+}
+@keyframes cloud-fade {
+  from { opacity: 0; }
+  to { opacity: var(--o, 1); }
 }
 @keyframes cloud-breathe {
   0%, 100% { transform: translateY(0); }
@@ -1529,6 +1603,8 @@ html[data-theme="light"] .masonry figcaption {
 }
 
 @media (max-width: 860px) {
+  .cloud-section .sec-head { align-items: flex-start; }
+  .cloud-refresh { align-self: flex-start; margin-top: 2px; }
   .cloud-board { grid-template-columns: 1fr; }
   .cloud-canvas { min-height: 448px; height: 460px; }
   .cloud-top5 { padding: 20px 18px 18px; }
@@ -2231,4 +2307,35 @@ html[data-theme="light"] {
 @media (prefers-reduced-motion: reduce) {
   .fan-box { display: none !important; }
   .fanbox-on .fan-timeline { position: relative !important; width: auto; height: auto; margin: 0; padding: 8px 0 0; overflow: visible; clip: auto; clip-path: none; white-space: normal; }
+}
+
+
+/* 粉丝箱：关注来源提示（fan-box tooltip） */
+.fan-box-tip {
+  max-width: min(260px, calc(100% - 20px));
+  white-space: normal;
+}
+.fan-box-tip .tip-row { white-space: nowrap; }
+.fan-box-tip .tip-from {
+  margin-top: 5px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
+.fan-box-tip .tip-from .tip-video {
+  font-style: normal;
+  color: var(--gold-hover, var(--gold));
+}
+.fan-box-tip .tip-from.is-pending {
+  color: var(--muted);
+  font-size: 12px;
+}
+html[data-theme="light"] .fan-box-tip .tip-from { color: var(--gold-deep, var(--gold)); }
+html[data-theme="light"] .fan-box-tip .tip-from .tip-video { color: var(--gold-deep, var(--gold)); }
+.fan-from {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
 }

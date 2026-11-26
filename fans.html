@@ -175,6 +175,13 @@
             <h2>大家在聊什么</h2>
             <p class="desc">把出现得最多的词放在正中，旁边是最近大家聊得比较多的话题。</p>
           </div>
+          <button type="button" class="btn btn-ghost btn-sm cloud-refresh" id="cloud-refresh" aria-controls="word-cloud" aria-label="刷新词云，让词语重新逐个出现">
+            <svg class="cloud-refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 12a8 8 0 1 1-2.2-5.5"/>
+              <path d="M20 4v4.5h-4.5"/>
+            </svg>
+            刷新
+          </button>
         </div>
         <div class="cloud-board reveal">
           <div class="cloud-canvas" id="word-cloud" role="img" aria-label="话题词云"></div>

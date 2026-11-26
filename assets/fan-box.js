@@ -81,6 +81,49 @@
   /* ---------- 读取粉丝 ---------- */
   function txt(el) { return el ? (el.textContent || "").replace(/\s+/g, " ").trim() : ""; }
 
+  function clipText(s, n) {
+    s = String(s || "").replace(/\s+/g, " ").trim();
+    if (!s) return "";
+    var chars = Array.from(s);
+    return chars.length > n ? chars.slice(0, n).join("") + "…" : s;
+  }
+
+  function cleanVideoTitle(s) {
+    s = String(s || "").replace(/\s+/g, " ").trim();
+    s = s.replace(/^[《「『【]+/, "").replace(/[》」』】]+$/, "").trim();
+    return clipText(s, 24);
+  }
+
+  function pickFromVideo(obj, card) {
+    if (obj) {
+      var keys = ["fromVideo", "videoTitle", "sourceVideo", "followVideo", "sourceTitle", "关注来源视频"];
+      for (var i = 0; i < keys.length; i++) {
+        var v = cleanVideoTitle(obj[keys[i]]);
+        if (v) return v;
+      }
+    }
+    if (card && card.getAttribute) {
+      var attr = cleanVideoTitle(card.getAttribute("data-from-video") || card.getAttribute("data-video-title"));
+      if (attr) return attr;
+      var elFrom = card.querySelector(".fan-from");
+      if (elFrom) {
+        var t = cleanVideoTitle(elFrom.getAttribute("data-from-video") || txt(elFrom).replace(/^从《/, "").replace(/》开始关注$/, ""));
+        if (t && t !== "关注来源待补充") return t;
+      }
+    }
+    return "";
+  }
+
+  /* 展示时再打一次码：已经是「首字+星号」的保持不变 */
+  function displayName(name) {
+    var chars = Array.from(String(name || "").trim());
+    if (!chars.length) return "粉*";
+    var rest = chars.slice(1);
+    if (chars[0] !== "*" && rest.length && rest.every(function (c) { return c === "*"; })) return chars.join("");
+    var stars = Math.min(3, Math.max(1, chars.length - 1));
+    return chars[0] + new Array(stars + 1).join("*");
+  }
+
   function paletteOf(f) {
     var s = String(f.name || "") + "|" + String(f.ord);
     var h = 2166136261;
@@ -112,6 +155,7 @@
         tag: txt(card.querySelector(".fan-tag")),
         when: txt(card.querySelector(".fan-when")),
         date: time ? time.getAttribute("datetime") || "" : "",
+        fromVideo: pickFromVideo(null, card),
         src: img ? img.getAttribute("src") || "" : "",
         big: /初代/.test(badge)
       };
@@ -689,11 +733,25 @@
     row.className = "tip-row";
     var n = document.createElement("span");
     n.className = "tip-name";
-    n.textContent = f.name;
+    n.textContent = displayName(f.name);
     row.appendChild(n);
     if (f.badge) { var bd = document.createElement("span"); bd.className = "fan-badge"; bd.textContent = f.badge; row.appendChild(bd); }
     if (f.tag) { var tg = document.createElement("span"); tg.className = "fan-tag"; tg.textContent = f.tag; row.appendChild(tg); }
     tip.appendChild(row);
+    var from = document.createElement("div");
+    var title = cleanVideoTitle(f.fromVideo);
+    from.className = "tip-from" + (title ? "" : " is-pending");
+    if (title) {
+      from.appendChild(document.createTextNode("从《"));
+      var em = document.createElement("span");
+      em.className = "tip-video";
+      em.textContent = title;
+      from.appendChild(em);
+      from.appendChild(document.createTextNode("》开始关注"));
+    } else {
+      from.textContent = "关注来源待补充";
+    }
+    tip.appendChild(from);
     if (f.when) { var w = document.createElement("div"); w.className = "tip-when"; w.textContent = f.when; tip.appendChild(w); }
     tip._w = tip.offsetWidth; tip._h = tip.offsetHeight;
     placeTip();
@@ -1137,16 +1195,25 @@
           var o = {};
           for (var k in f) if (Object.prototype.hasOwnProperty.call(f, k)) o[k] = f[k];
           o.idx = i;
+          o.name = displayName(o.name || ("示" + "*"));
+          o.fromVideo = pickFromVideo(o, null);
           return o;
         }));
       }
       var n = Math.max(0, Math.floor(Number(spec) || 0));
       var xing = ["示", "例", "测", "试", "仿", "演", "样", "假"];
+      var demoTitles = [
+        "请了个AI老师，第一天就把我骂醒了",
+        "同一个账号，网页能用，电脑本地端死活登不上",
+        "我做了个网站，把学习计划摊开给自己看"
+      ];
       var out = [];
       for (var i = 0; i < n; i++) {
         var name = xing[i % xing.length] + "*".repeat(1 + (i % 3));
         if (i > 0 && i % 90 === 89) name = "独" + "*".repeat(1 + (i % 3));
         var date = fakeDate(i);
+        // 每三位留一个空缺，方便同时测到「有来源」和「待补充」
+        var fromVideo = (i % 3 === 2) ? "" : demoTitles[i % 3];
         out.push({
           idx: i,
           name: name,
@@ -1154,6 +1221,7 @@
           tag: "",
           when: i === 0 ? (date + " 前已关注") : ("关注于 " + date),
           date: date,
+          fromVideo: fromVideo,
           src: "",
           initial: xing[i % xing.length],
           big: i === 0
@@ -1164,7 +1232,7 @@
     window.__fbDebug = function () {
       return {
         balls: balls.map(function (b) {
-          return { x: b.x, y: b.y, r: b.r, kind: b.kind, name: b.fan.name, ord: b.fan.ord, big: !!b.fan.big };
+          return { x: b.x, y: b.y, r: b.r, kind: b.kind, name: b.fan.name, ord: b.fan.ord, big: !!b.fan.big, fromVideo: b.fan.fromVideo || "" };
         }),
         total: allFans.length,
         batchIndex: batchIndex,

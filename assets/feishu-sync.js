@@ -230,6 +230,18 @@
         p.appendChild(t);
         body.appendChild(p);
       }
+      var fromVideo = "";
+      ["fromVideo", "videoTitle", "sourceVideo", "followVideo", "sourceTitle", "关注来源视频"].forEach(function (k) {
+        if (fromVideo) return;
+        var s = String(f[k] || "").replace(/\s+/g, " ").trim();
+        s = s.replace(/^[《「『【]+/, "").replace(/[》」』】]+$/, "").trim();
+        if (s) fromVideo = s;
+      });
+      if (fromVideo) {
+        li.setAttribute("data-from-video", fromVideo);
+        var pFrom = el("p", "fan-from", "从《" + fromVideo + "》开始关注");
+        body.appendChild(pFrom);
+      }
       li.appendChild(body);
       return li;
     });
